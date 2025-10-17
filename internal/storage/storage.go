@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"sync"
 
-	"lyceum/internal/models"
+	pb "lyceum/pkg/api/test"
 )
 
 type OrderStorage struct {
-	Orders map[string]models.Order
+	Orders map[string]*pb.Order
 	nextID int32
 	Mu           sync.Mutex
 }
 
 func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{
-		Orders: make(map[string]models.Order),
+		Orders: make(map[string]*pb.Order),
 	}
 }
 
@@ -26,8 +26,8 @@ func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
 
 	ID := fmt.Sprintf("%d", s.nextID)
 
-	order := models.Order{
-		ID: ID,
+	order := &pb.Order{
+		Id: ID,
 		Item: item,
 		Quantity: quantity,
 	}
@@ -37,14 +37,14 @@ func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
 	return ID
 }
 
-func (s *OrderStorage) GetOrder(ID string) (models.Order, error) {
+func (s *OrderStorage) GetOrder(ID string) (*pb.Order, error) {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 	
 	order, exist := s.Orders[ID]
 
 	if !exist {
-		return models.Order{}, errors.New("there is no order with this ID")
+		return nil, errors.New("there is no order with this ID")
 	}
 	return order, nil
 }
@@ -61,12 +61,12 @@ func (s *OrderStorage) DeleteOrder(ID string) bool {
 	return true
 }
 
-func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) models.Order {
+func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) *pb.Order {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 
-	newOrder := models.Order{
-		ID: ID,
+	newOrder := &pb.Order{
+		Id: ID,
 		Item: item,
 		Quantity: quantity,
 	}
@@ -76,15 +76,15 @@ func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) models.Order
 	return s.Orders[ID]
 }
 
-func (s *OrderStorage) ListOrders() []models.Order {
+func (s *OrderStorage) ListOrders() []*pb.Order {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 	
 	if len(s.Orders) == 0 {
-		return []models.Order{}
+		return nil
 	}
 
-	slice := make([]models.Order, 0, len(s.Orders))
+	slice := make([]*pb.Order, 0, len(s.Orders))
 	for _, order := range s.Orders {
 		slice = append(slice, order)
 	}
