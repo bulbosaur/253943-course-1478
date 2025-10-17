@@ -1,8 +1,8 @@
 package v1
 
 import (
-	storage "gitlab.crja72.ru/golang/2025/spring/course/students/253943-Sofiytula71-gmail.com-course-1478/-/tree/main"
-	pb "gitlab.crja72.ru/golang/2025/spring/course/students/253943-Sofiytula71-gmail.com-course-1478/-/tree/main/pkg/api/test"
+	storage "lyceum/internal/storage"
+	pb "lyceum/pkg/api/test"
 )
 type OrderServiceServer struct {
 	pb.UnimplementedOrderServiceServer
