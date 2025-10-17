@@ -49,14 +49,19 @@ func (s *OrderStorage) GetOrder(ID string) (models.Order, error) {
 	return order, nil
 }
 
-func (s *OrderStorage) DeleteOrder(ID string) {
+func (s *OrderStorage) DeleteOrder(ID string) bool {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 
 	delete(s.Orders, ID)
+
+	if _, exist := s.Orders[ID]; exist {
+		return false
+	}
+	return true
 }
 
-func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) {
+func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) models.Order {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 
@@ -67,11 +72,22 @@ func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) {
 	}
 
 	s.Orders[ID] = newOrder
+
+	return s.Orders[ID]
 }
 
-func (s *OrderStorage) ListOrders() map[string]models.Order {
+func (s *OrderStorage) ListOrders() []models.Order {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 	
-	return s.Orders
+	if len(s.Orders) == 0 {
+		return []models.Order{}
+	}
+
+	slice := make([]models.Order, 0, len(s.Orders))
+	for _, order := range s.Orders {
+		slice = append(slice, order)
+	}
+
+	return slice
 }

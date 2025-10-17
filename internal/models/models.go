@@ -31,6 +31,8 @@ type GetOrderResponse struct {
 	Order Order
 }
 
+type ListOrdersRequest struct{}
+
 type ListOrdersResponse struct {
 	Orders []Order
 }
