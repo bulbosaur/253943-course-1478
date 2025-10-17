@@ -29,7 +29,7 @@ func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
 	order := models.Order{
 		ID: ID,
 		Item: item,
-		Quanity: quantity,
+		Quantity: quantity,
 	}
 	s.nextID ++
 	s.Orders[ID] = order
@@ -57,15 +57,21 @@ func (s *OrderStorage) DeleteOrder(ID string) {
 }
 
 func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) {
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+
 	newOrder := models.Order{
 		ID: ID,
 		Item: item,
-		Quanity: quantity,
+		Quantity: quantity,
 	}
 
 	s.Orders[ID] = newOrder
 }
 
 func (s *OrderStorage) ListOrders() map[string]models.Order {
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+	
 	return s.Orders
 }

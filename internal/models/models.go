@@ -1,9 +1,9 @@
 package models
 
 type Order struct {
-	ID      string
-	Item    string
-	Quanity int32
+	ID       string
+	Item     string
+	Quantity int32
 }
 
 type CreateOrderRequest struct {
@@ -36,9 +36,9 @@ type ListOrdersResponse struct {
 }
 
 type UpdateOrderRequest struct {
-	ID      string
-	Item    string
-	Quanity int32
+	ID       string
+	Item     string
+	Quantity int32
 }
 
 type UpdateOrderResponse struct {
