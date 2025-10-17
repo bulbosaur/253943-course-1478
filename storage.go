@@ -1,8 +1,71 @@
 package storage
 
-import "sync"
+import (
+	"errors"
+	"fmt"
+	"sync"
 
-type Orders struct {
-	OrderStorage map[string]string
+	"gitlab.crja72.ru/golang/2025/spring/course/students/253943-Sofiytula71-gmail.com-course-1478/-/tree/main/internal/models"
+)
+
+type OrderStorage struct {
+	Orders map[string]models.Order
+	nextID int32
 	Mu           sync.Mutex
+}
+
+func NewOrderStorage() *OrderStorage {
+	return &OrderStorage{
+		Orders: make(map[string]models.Order),
+	}
+}
+
+func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+
+	ID := fmt.Sprintf("%d", s.nextID)
+
+	order := models.Order{
+		ID: ID,
+		Item: item,
+		Quanity: quantity,
+	}
+	s.nextID ++
+	s.Orders[ID] = order
+
+	return ID
+}
+
+func (s *OrderStorage) GetOrder(ID string) (models.Order, error) {
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+	
+	order, exist := s.Orders[ID]
+
+	if !exist {
+		return models.Order{}, errors.New("there is no order with this ID")
+	}
+	return order, nil
+}
+
+func (s *OrderStorage) DeleteOrder(ID string) {
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+
+	delete(s.Orders, ID)
+}
+
+func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) {
+	newOrder := models.Order{
+		ID: ID,
+		Item: item,
+		Quanity: quantity,
+	}
+
+	s.Orders[ID] = newOrder
+}
+
+func (s *OrderStorage) ListOrders() map[string]models.Order {
+	return s.Orders
 }
