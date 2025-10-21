@@ -9,7 +9,10 @@ import (
 	pb "lyceum/pkg/api/test"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
+
+var port string = ":50051"
 
 func main() {
 	orderStorage := storage.NewOrderStorage()
@@ -19,13 +22,19 @@ func main() {
 
 	pb.RegisterOrderServiceServer(grpcServer, orderService)
 
-	l, err := net.Listen("tcp", ":50051")
+	reflection.Register(grpcServer)
+
+	l, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("main.StartGrpc: %v", err)
+	} else {
+		log.Printf("listen")
 	}
 	
 	err = grpcServer.Serve(l)
 	if err != nil {
 		log.Fatalf("main.Grpc: %v", err)
 	}
+
+	log.Printf("server started successfully")
 }
