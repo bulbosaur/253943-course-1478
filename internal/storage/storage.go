@@ -11,7 +11,7 @@ import (
 type OrderStorage struct {
 	Orders map[string]*pb.Order
 	nextID int32
-	Mu           sync.Mutex
+	Mu     sync.Mutex
 }
 
 func NewOrderStorage() *OrderStorage {
@@ -27,11 +27,11 @@ func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
 	ID := fmt.Sprintf("%d", s.nextID)
 
 	order := &pb.Order{
-		Id: ID,
-		Item: item,
+		Id:       ID,
+		Item:     item,
 		Quantity: quantity,
 	}
-	s.nextID ++
+	s.nextID++
 	s.Orders[ID] = order
 
 	return ID
@@ -40,7 +40,7 @@ func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
 func (s *OrderStorage) GetOrder(ID string) (*pb.Order, error) {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
-	
+
 	order, exist := s.Orders[ID]
 
 	if !exist {
@@ -66,8 +66,8 @@ func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) *pb.Order {
 	defer s.Mu.Unlock()
 
 	newOrder := &pb.Order{
-		Id: ID,
-		Item: item,
+		Id:       ID,
+		Item:     item,
 		Quantity: quantity,
 	}
 
@@ -79,7 +79,7 @@ func (s *OrderStorage) UpdateOrder(ID, item string, quantity int32) *pb.Order {
 func (s *OrderStorage) ListOrders() []*pb.Order {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
-	
+
 	if len(s.Orders) == 0 {
 		return nil
 	}

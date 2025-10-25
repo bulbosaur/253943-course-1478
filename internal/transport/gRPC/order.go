@@ -9,7 +9,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *OrderServiceServer) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.CreateOrderResponse, error) {
+func (s *OrderServiceServer) CreateOrder(
+	ctx context.Context,
+	req *pb.CreateOrderRequest,
+) (*pb.CreateOrderResponse, error) {
 	var resp pb.CreateOrderResponse
 
 	if req.Item == "" {
@@ -23,7 +26,7 @@ func (s *OrderServiceServer) CreateOrder(ctx context.Context, req *pb.CreateOrde
 	orderID := s.storage.CreateOrder(req.Item, req.Quantity)
 
 	resp.Id = orderID
-	
+
 	return &resp, nil
 }
 
@@ -39,7 +42,10 @@ func (s *OrderServiceServer) GetOrder(ctx context.Context, req *pb.GetOrderReque
 	return &resp, nil
 }
 
-func (s *OrderServiceServer) UpdateOrder(ctx context.Context, req *pb.UpdateOrderRequest) (*pb.UpdateOrderResponse, error) {
+func (s *OrderServiceServer) UpdateOrder(
+	ctx context.Context,
+	req *pb.UpdateOrderRequest,
+) (*pb.UpdateOrderResponse, error) {
 	var resp pb.UpdateOrderResponse
 
 	newOrder := s.storage.UpdateOrder(req.Id, req.Item, req.Quantity)
@@ -48,10 +54,13 @@ func (s *OrderServiceServer) UpdateOrder(ctx context.Context, req *pb.UpdateOrde
 	return &resp, nil
 }
 
-func (s *OrderServiceServer) DeleteOrder(ctx context.Context, req *pb.DeleteOrderRequest) (*pb.DeleteOrderResponse, error) {
+func (s *OrderServiceServer) DeleteOrder(
+	ctx context.Context,
+	req *pb.DeleteOrderRequest,
+) (*pb.DeleteOrderResponse, error) {
 	var (
 		resp pb.DeleteOrderResponse
-		err error
+		err  error
 	)
 
 	res := s.storage.DeleteOrder(req.Id)
@@ -64,7 +73,10 @@ func (s *OrderServiceServer) DeleteOrder(ctx context.Context, req *pb.DeleteOrde
 	return &resp, err
 }
 
-func (s *OrderServiceServer) ListOrders(ctx context.Context, req *pb.ListOrdersRequest) (*pb.ListOrdersResponse, error) {
+func (s *OrderServiceServer) ListOrders(
+	ctx context.Context,
+	req *pb.ListOrdersRequest,
+) (*pb.ListOrdersResponse, error) {
 	var resp pb.ListOrdersResponse
 
 	resp.Orders = s.storage.ListOrders()

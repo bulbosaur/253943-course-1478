@@ -4,7 +4,10 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"time"
 )
+
+const defaultReadHeaderTimeout time.Duration = 5
 
 type Server struct {
 	srv *http.Server
@@ -12,8 +15,9 @@ type Server struct {
 
 func NewServer(port int) *Server {
 	srv := http.Server{
-		Addr: ":" + strconv.Itoa(port),
+		Addr:    ":" + strconv.Itoa(port),
 		Handler: nil,
+		ReadHeaderTimeout: defaultReadHeaderTimeout,
 	}
 
 	return &Server{srv: &srv}

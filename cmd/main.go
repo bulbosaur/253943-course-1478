@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var port string = ":50051"
+var port = ":50051"
 
 func main() {
 	orderStorage := storage.NewOrderStorage()
@@ -30,7 +30,7 @@ func main() {
 	} else {
 		log.Printf("listen")
 	}
-	
+
 	err = grpcServer.Serve(l)
 	if err != nil {
 		log.Fatalf("main.Grpc: %v", err)
