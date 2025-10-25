@@ -15,15 +15,15 @@ func (s *OrderServiceServer) CreateOrder(
 ) (*pb.CreateOrderResponse, error) {
 	var resp pb.CreateOrderResponse
 
-	if req.Item == "" {
+	if req.GetItem() == "" {
 		return &resp, status.Error(codes.InvalidArgument, "gRPC.CreateOrder: item is required")
 	}
 
-	if req.Quantity <= 0 {
+	if req.GetQuantity() <= 0 {
 		return &resp, status.Error(codes.InvalidArgument, "gRPC.CreateOrder: quantity must be positive")
 	}
 
-	orderID := s.storage.CreateOrder(req.Item, req.Quantity)
+	orderID := s.storage.CreateOrder(req.GetItem(), req.GetQuantity())
 
 	resp.Id = orderID
 
@@ -33,7 +33,7 @@ func (s *OrderServiceServer) CreateOrder(
 func (s *OrderServiceServer) GetOrder(ctx context.Context, req *pb.GetOrderRequest) (*pb.GetOrderResponse, error) {
 	var resp pb.GetOrderResponse
 
-	order, err := s.storage.GetOrder(req.Id)
+	order, err := s.storage.GetOrder(req.GetId())
 	if err != nil {
 		return &pb.GetOrderResponse{}, fmt.Errorf("gRPC.GetOrder: %w", err)
 	}
@@ -48,7 +48,7 @@ func (s *OrderServiceServer) UpdateOrder(
 ) (*pb.UpdateOrderResponse, error) {
 	var resp pb.UpdateOrderResponse
 
-	newOrder := s.storage.UpdateOrder(req.Id, req.Item, req.Quantity)
+	newOrder := s.storage.UpdateOrder(req.GetId(), req.GetItem(), req.GetQuantity())
 	resp.Order = newOrder
 
 	return &resp, nil
@@ -63,11 +63,11 @@ func (s *OrderServiceServer) DeleteOrder(
 		err  error
 	)
 
-	res := s.storage.DeleteOrder(req.Id)
+	res := s.storage.DeleteOrder(req.GetId())
 	resp.Success = res
 
 	if !res {
-		err = fmt.Errorf("qRPC.DeleteOrder: can't delete an order ID %s", req.Id)
+		err = fmt.Errorf("qRPC.DeleteOrder: can't delete an order ID %s", req.GetId())
 	}
 
 	return &resp, err

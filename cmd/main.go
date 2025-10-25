@@ -27,8 +27,6 @@ func main() {
 	l, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("main.StartGrpc: %v", err)
-	} else {
-		log.Printf("listen")
 	}
 
 	err = grpcServer.Serve(l)

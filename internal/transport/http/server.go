@@ -15,8 +15,8 @@ type Server struct {
 
 func NewServer(port int) *Server {
 	srv := http.Server{
-		Addr:    ":" + strconv.Itoa(port),
-		Handler: nil,
+		Addr:              ":" + strconv.Itoa(port),
+		Handler:           nil,
 		ReadHeaderTimeout: defaultReadHeaderTimeout,
 	}
 

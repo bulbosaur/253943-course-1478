@@ -2,7 +2,7 @@ package storage
 
 import (
 	"errors"
-	"fmt"
+	"strconv"
 	"sync"
 
 	pb "lyceum/pkg/api/test"
@@ -24,7 +24,7 @@ func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 
-	ID := fmt.Sprintf("%d", s.nextID)
+	ID := strconv.Itoa(int(s.nextID))
 
 	order := &pb.Order{
 		Id:       ID,

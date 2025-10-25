@@ -8,6 +8,7 @@ import (
 
 type OrderServiceServer struct {
 	pb.UnimplementedOrderServiceServer
+
 	storage *storage.OrderStorage
 }
 
