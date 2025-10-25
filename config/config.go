@@ -1,3 +1,4 @@
+// config/config.go
 package config
 
 import (
@@ -10,7 +11,7 @@ import (
 )
 
 type Config struct {
-	Env EnvConfig `mapstructure:"env"`
+	Env  EnvConfig  `mapstructure:"env"`
 	GRPC GRPCConfig `mapstructure:"grpc"`
 }
 
@@ -23,16 +24,44 @@ type GRPCConfig struct {
 	Port int    `mapstructure:"port"`
 }
 
-func LoadConfig(envPath, yamlPath string) (*Config, error) {
-	viper.SetConfigFile(envPath)
-	err := viper.MergeInConfig()
+func loadEnvFile(envPath string) error {
+	data, err := os.ReadFile(envPath)
 	if err != nil {
-		log.Printf("config.LoadConfig: can't find .env: %v", err)
-	} else {
-		log.Println("Loaded .env file")
+		return err
 	}
 
-	data, err := os.ReadFile("config.yaml")
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		if (strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) ||
+			(strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) {
+			value = value[1 : len(value)-1]
+		}
+
+		os.Setenv(key, value)
+	}
+	return nil
+}
+
+func LoadConfig(envPath, yamlPath string) (*Config, error) {
+	err := loadEnvFile(envPath)
+	if err != nil {
+		log.Printf("config.LoadConfig: can't read .env file %s: %v", envPath, err)
+	}
+
+	data, err := os.ReadFile(yamlPath)
 	if err != nil {
 		return nil, fmt.Errorf("config.LoadConfig: error reading config file: %w", err)
 	}
