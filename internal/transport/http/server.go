@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 const defaultReadHeaderTimeout time.Duration = 5
@@ -14,10 +16,13 @@ type Server struct {
 }
 
 func NewServer(port int) *Server {
+	readHeaderTimeout := viper.GetDuration("HTTP_TIMEOUT") // Проверить, корректно ли
+	println(readHeaderTimeout)
+	
 	srv := http.Server{
 		Addr:              ":" + strconv.Itoa(port),
 		Handler:           nil,
-		ReadHeaderTimeout: defaultReadHeaderTimeout,
+		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
 	return &Server{srv: &srv}

@@ -21,14 +21,16 @@ func main() {
 	envPath := filepath.Join(configDir, ".env")
 	yamlPath := filepath.Join(configDir, "config.yaml")
 
-	cfg, err := config.LoadConfig(envPath, yamlPath)
-	if err != nil { return }
-	
-
 	logger, _ := zap.NewDevelopment()
 	defer logger.Sync()
 
+	cfg, err := config.LoadConfig(envPath, yamlPath)
+	if err != nil {
+		logger.Error("failed to load config", zap.String("envPath", envPath), zap.String("yaml.Path", yamlPath), zap.Error(err))
+	}
+	
 	logger.Info("starting debezium", zap.String("version", "test"), zap.Any("config", cfg))
+	logger.Info("logger level", zap.Any("level", logger.Level()))
 
 	orderStorage := storage.NewOrderStorage()
 	orderService := v1.NewOrderServiceServer(orderStorage)
@@ -43,15 +45,13 @@ func main() {
 	
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatalf("main.StartGrpc: %v", err)
+		logger.Fatal("main.StartGrpc: failed to listen", zap.String("addr", addr), zap.Error(err))
 	}
 
 	err = grpcServer.Serve(l)
 	if err != nil {
 		log.Fatalf("main.Grpc: %v", err)
 	}
-
-	logger.Info("server started successfully")
 
 	select {}
 }
