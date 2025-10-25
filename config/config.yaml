@@ -1,3 +1,6 @@
+env:
+  loglevel: ${ENV_LOGLEVEL}
+
 grpc:
   port: ${GRPC_PORT}
   host: ${GRPC_HOST}
