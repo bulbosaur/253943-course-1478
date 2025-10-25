@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"lyceum/config"
 	"lyceum/internal/storage"
 	v1 "lyceum/internal/transport/gRPC"
+	lg "lyceum/logger"
 	"net"
 	"path/filepath"
 
@@ -17,20 +19,23 @@ import (
 )
 
 func main() {
-	configDir := "./config"
-	envPath := filepath.Join(configDir, ".env")
-	yamlPath := filepath.Join(configDir, "config.yaml")
-
-	logger, _ := zap.NewDevelopment()
-	defer logger.Sync()
+	var (
+		configDir = "./config"
+		envPath = filepath.Join(configDir, ".env")
+		yamlPath = filepath.Join(configDir, "config.yaml")
+	)
 
 	cfg, err := config.LoadConfig(envPath, yamlPath)
 	if err != nil {
-		logger.Error("failed to load config", zap.String("envPath", envPath), zap.String("yaml.Path", yamlPath), zap.Error(err))
+		// logger.Error(ctx, "failed to load config", zap.String("envPath", envPath), zap.String("yaml.Path", yamlPath), zap.Error(err))
+		log.Print("failed to load config:", err)
 	}
+
+	logger, _ := lg.NewLogger(cfg.Env.LogLevel)
 	
-	logger.Info("starting debezium", zap.String("version", "test"), zap.Any("config", cfg))
-	logger.Info("logger level", zap.Any("level", logger.Level()))
+	ctx := lg.WithRequestID(context.Background(), "12345")
+	
+	logger.Info(ctx, "starting debezium", zap.String("version", "test"), zap.Any("config", cfg))
 
 	orderStorage := storage.NewOrderStorage()
 	orderService := v1.NewOrderServiceServer(orderStorage)
@@ -45,12 +50,13 @@ func main() {
 	
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
-		logger.Fatal("main.StartGrpc: failed to listen", zap.String("addr", addr), zap.Error(err))
+		logger.Error(ctx, "main.StartGrpc: failed to listen", zap.String("addr", addr), zap.Error(err))
+		return
 	}
 
 	err = grpcServer.Serve(l)
 	if err != nil {
-		log.Fatalf("main.Grpc: %v", err)
+		logger.Error(ctx, "main.StartGrpc: failed to serve", zap.String("addr", addr), zap.Error(err))
 	}
 
 	select {}
