@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	defaultLogLevel = "info"
 	loggerRequestIDKey = "x-request-id"
 	loggerTraceIDKey = "x-trace-id"
 	loggerKey          = "logger"
@@ -24,6 +25,15 @@ type L struct {
 
 func WithLogger(ctx context.Context, log Logger) context.Context {
 	return context.WithValue(ctx, loggerKey, log)
+}
+
+func FromContext(ctx context.Context) Logger {
+	if logger, ok := ctx.Value(loggerKey).(Logger); ok {
+		return logger
+	}
+	logger, _ := NewLogger(defaultLogLevel)
+
+	return logger
 }
 
 func NewLogger(loglevel string) (Logger, error) {

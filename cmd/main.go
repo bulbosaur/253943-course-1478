@@ -34,6 +34,7 @@ func main() {
 	logger, _ := lg.NewLogger(cfg.Env.LogLevel)
 	
 	ctx := lg.WithRequestID(context.Background(), "")
+	ctx = lg.WithLogger(ctx, logger)
 	
 	logger.Info(ctx, "starting debezium", zap.String("version", "test"), zap.Any("config", cfg))
 
@@ -56,6 +57,8 @@ func main() {
 		return
 	}
 
+	log.Printf("Server listening on %s", addr)
+	
 	err = grpcServer.Serve(l)
 	if err != nil {
 		logger.Error(ctx, "main.StartGrpc: failed to serve", zap.String("addr", addr), zap.Error(err))

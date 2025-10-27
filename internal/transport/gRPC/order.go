@@ -3,8 +3,10 @@ package v1
 import (
 	"context"
 	"fmt"
+	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,7 +26,8 @@ func (s *OrderServiceServer) CreateOrder(
 	}
 
 	orderID := s.storage.CreateOrder(req.GetItem(), req.GetQuantity())
-	// logger.Info()
+	l := logger.FromContext(ctx)
+	l.Info(ctx, "new order was created", zap.String("orderID", orderID))
 
 	resp.Id = orderID
 
