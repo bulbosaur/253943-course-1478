@@ -9,6 +9,7 @@ import (
 const (
 	loggerRequestIDKey = "x-request-id"
 	loggerTraceIDKey = "x-trace-id"
+	loggerKey          = "logger"
 )
 
 type Logger interface {
@@ -21,9 +22,9 @@ type L struct {
 	z zap.Logger
 }
 
-// func WithLogger(ctx context.Context, log Logger) context.Context {
-// 	return context.WithValue(ctx, loggerRequestIDKey, log)
-// }
+func WithLogger(ctx context.Context, log Logger) context.Context {
+	return context.WithValue(ctx, loggerKey, log)
+}
 
 func NewLogger(loglevel string) (Logger, error) {
 	LoggerCfg := zap.NewProductionConfig()
@@ -37,7 +38,7 @@ func NewLogger(loglevel string) (Logger, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer logger.Sync()
+	// defer logger.Sync()
 
 	lo := L{*logger}
 
@@ -53,7 +54,7 @@ func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {
 func (l *L) Error(ctx context.Context, msg string, fields ...zap.Field) {
 	id := ctx.Value(loggerRequestIDKey).(string)
 	fields = append(fields, zap.String(loggerRequestIDKey, id))
-	l.z.Error(msg, fields...)
+	l.z.Error(msg, fields...) 
 }
 
 func (l *L) Debug(ctx context.Context, msg string, fields ...zap.Field) {
@@ -66,6 +67,6 @@ func WithRequestID(ctx context.Context, requestID string) context.Context {
 	return context.WithValue(ctx, loggerRequestIDKey, requestID)
 }
 
-func WithTraceID(ctx context.Context, requestID string) context.Context {
-	return context.WithValue(ctx, loggerRequestIDKey, requestID)
+func WithTraceID(ctx context.Context, traceID string) context.Context {
+	return context.WithValue(ctx, loggerRequestIDKey, traceID)
 }

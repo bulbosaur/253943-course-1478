@@ -24,6 +24,7 @@ func (s *OrderServiceServer) CreateOrder(
 	}
 
 	orderID := s.storage.CreateOrder(req.GetItem(), req.GetQuantity())
+	// logger.Info()
 
 	resp.Id = orderID
 

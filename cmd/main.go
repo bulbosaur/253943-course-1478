@@ -33,14 +33,16 @@ func main() {
 
 	logger, _ := lg.NewLogger(cfg.Env.LogLevel)
 	
-	ctx := lg.WithRequestID(context.Background(), "12345")
+	ctx := lg.WithRequestID(context.Background(), "")
 	
 	logger.Info(ctx, "starting debezium", zap.String("version", "test"), zap.Any("config", cfg))
 
 	orderStorage := storage.NewOrderStorage()
 	orderService := v1.NewOrderServiceServer(orderStorage)
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(v1.LoggingUnaryInterceptor),
+	)
 
 	pb.RegisterOrderServiceServer(grpcServer, orderService)
 

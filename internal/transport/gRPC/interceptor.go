@@ -1,17 +1,30 @@
 package v1
 
-// import (
-// 	"context"
+import (
+	"context"
+	"lyceum/logger"
 
-// 	lg "lyceum/logger"
+	"github.com/google/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+)
 
-// 	"google.golang.org/grpc"
-// )
+func LoggingUnaryInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+	var reqID string
 
-// func RegistLoggerInterceptor(logger lg.Logger) grpc.UnaryServerInterceptor {
-// 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-// 		ctx = lg.WithLogger(ctx, logger)
-// 		return handler(ctx, req)
-// 	}
-// }
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		md = metadata.MD{}
+	}
 
+	
+	if listID := md["x-request-id"]; len(listID) > 0 {
+		reqID = listID[0]
+	} else {
+		reqID = uuid.NewString()
+	}
+	
+	ctx = logger.WithRequestID(ctx, reqID)
+
+	return handler(ctx, req)
+}
