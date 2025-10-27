@@ -27,11 +27,11 @@ func main() {
 
 	cfg, err := config.LoadConfig(envPath, yamlPath)
 	if err != nil {
-		// logger.Error(ctx, "failed to load config", zap.String("envPath", envPath), zap.String("yaml.Path", yamlPath), zap.Error(err))
 		log.Print("failed to load config:", err)
 	}
 
 	logger, _ := lg.NewLogger(cfg.Env.LogLevel)
+	lg.GlobalLogger = logger
 	
 	ctx := lg.WithRequestID(context.Background(), "")
 	ctx = lg.WithLogger(ctx, logger)
@@ -57,8 +57,7 @@ func main() {
 		return
 	}
 
-	log.Printf("Server listening on %s", addr)
-	
+
 	err = grpcServer.Serve(l)
 	if err != nil {
 		logger.Error(ctx, "main.StartGrpc: failed to serve", zap.String("addr", addr), zap.Error(err))

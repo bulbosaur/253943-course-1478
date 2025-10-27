@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
@@ -26,8 +27,9 @@ func (s *OrderServiceServer) CreateOrder(
 	}
 
 	orderID := s.storage.CreateOrder(req.GetItem(), req.GetQuantity())
+
 	l := logger.FromContext(ctx)
-	l.Info(ctx, "new order was created", zap.String("orderID", orderID))
+	l.Debug(ctx, "new order was created", zap.String("orderID", orderID))
 
 	resp.Id = orderID
 
@@ -38,9 +40,15 @@ func (s *OrderServiceServer) GetOrder(ctx context.Context, req *pb.GetOrderReque
 	var resp pb.GetOrderResponse
 
 	order, err := s.storage.GetOrder(req.GetId())
+
+	l := logger.FromContext(ctx)
+	
 	if err != nil {
+		l.Error(ctx, "gRPC.GetOrder", zap.Any("error", err))
 		return &pb.GetOrderResponse{}, fmt.Errorf("gRPC.GetOrder: %w", err)
 	}
+	l.Debug(ctx, "order was got", zap.Any("order", order))
+
 	resp.Order = order
 
 	return &resp, nil
@@ -52,8 +60,15 @@ func (s *OrderServiceServer) UpdateOrder(
 ) (*pb.UpdateOrderResponse, error) {
 	var resp pb.UpdateOrderResponse
 
+	if req.GetId() == "" {
+		return &resp, fmt.Errorf("gRPC.UpdateOrder: %w", errors.New("orderID is empty"))
+	}
+
 	newOrder := s.storage.UpdateOrder(req.GetId(), req.GetItem(), req.GetQuantity())
 	resp.Order = newOrder
+
+	l := logger.FromContext(ctx)
+	l.Debug(ctx, "order was updated", zap.Any("newOrder", newOrder))
 
 	return &resp, nil
 }
@@ -73,6 +88,9 @@ func (s *OrderServiceServer) DeleteOrder(
 	if !res {
 		err = fmt.Errorf("qRPC.DeleteOrder: can't delete an order ID %s", req.GetId())
 	}
+
+	l := logger.FromContext(ctx)
+	l.Debug(ctx, "order was updated", zap.String("orderID", req.GetId()))
 
 	return &resp, err
 }

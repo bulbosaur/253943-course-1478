@@ -23,24 +23,26 @@ type L struct {
 	z zap.Logger
 }
 
+var GlobalLogger Logger
+
 func WithLogger(ctx context.Context, log Logger) context.Context {
 	return context.WithValue(ctx, loggerKey, log)
 }
 
 func FromContext(ctx context.Context) Logger {
-	if logger, ok := ctx.Value(loggerKey).(Logger); ok {
+	logger, ok := ctx.Value(loggerKey).(Logger)
+	if ok {
 		return logger
+	} else {
+		return GlobalLogger
 	}
-	logger, _ := NewLogger(defaultLogLevel)
-
-	return logger
 }
 
 func NewLogger(loglevel string) (Logger, error) {
 	LoggerCfg := zap.NewProductionConfig()
 	LoggerCfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 
-	if loglevel == "dev" {
+	if loglevel == "debug" {
 		LoggerCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
 	}
 
@@ -53,6 +55,15 @@ func NewLogger(loglevel string) (Logger, error) {
 	lo := L{*logger}
 
 	return &lo, nil
+}
+
+func InitGlobalLogger(loglevel string) error {
+	log, err := NewLogger(loglevel)
+	if err != nil {
+		return err
+	}
+	GlobalLogger = log
+	return nil
 }
 
 func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {

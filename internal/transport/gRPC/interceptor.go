@@ -17,14 +17,14 @@ func LoggingUnaryInterceptor(ctx context.Context, req any, info *grpc.UnaryServe
 		md = metadata.MD{}
 	}
 
-	
 	if listID := md["x-request-id"]; len(listID) > 0 {
 		reqID = listID[0]
 	} else {
 		reqID = uuid.NewString()
 	}
-	
+
 	ctx = logger.WithRequestID(ctx, reqID)
+	ctx = logger.WithLogger(ctx, logger.GlobalLogger)
 
 	return handler(ctx, req)
 }
