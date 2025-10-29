@@ -84,17 +84,6 @@ GRPC_HOST=localhost
 GRPC_PORT=50051
 ```
 
-### Пример `config.yaml`
-
-```
-env:
-  loglevel: "info"  # будет переопределён, если задан ENV_LOGLEVEL
-
-grpc:
-  host: "0.0.0.0"
-  port: 50051
-```
-
 ### Описание переменных
 
 | Переменная     | По умолчанию | Описание                                                |
