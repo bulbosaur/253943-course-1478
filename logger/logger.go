@@ -17,13 +17,12 @@ type Logger interface {
 	Info(ctx context.Context, msg string, fields ...zap.Field)
 	Error(ctx context.Context, msg string, fields ...zap.Field)
 	Debug(ctx context.Context, msg string, fields ...zap.Field)
+	Sync() error
 }
 
 type L struct {
 	z zap.Logger
 }
-
-var GlobalLogger Logger
 
 func WithLogger(ctx context.Context, log Logger) context.Context {
 	return context.WithValue(ctx, loggerKey, log)
@@ -31,11 +30,10 @@ func WithLogger(ctx context.Context, log Logger) context.Context {
 
 func FromContext(ctx context.Context) Logger {
 	logger, ok := ctx.Value(loggerKey).(Logger)
-	if ok {
-		return logger
-	} else {
-		return GlobalLogger
+	if !ok {
+		panic("logger not found in context")
 	}
+	return logger
 }
 
 func NewLogger(loglevel string) (Logger, error) {
@@ -50,38 +48,38 @@ func NewLogger(loglevel string) (Logger, error) {
 	if err != nil {
 		return nil, err
 	}
-	// defer logger.Sync()
 
-	lo := L{*logger}
+	lo := L{z: *logger}
 
 	return &lo, nil
 }
 
-func InitGlobalLogger(loglevel string) error {
-	log, err := NewLogger(loglevel)
-	if err != nil {
-		return err
-	}
-	GlobalLogger = log
-	return nil
-}
-
 func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {
 	id := ctx.Value(loggerRequestIDKey).(string)
-	fields = append(fields, zap.String(loggerRequestIDKey, id))
+	if id != "" {
+		fields = append(fields, zap.String(loggerRequestIDKey, id))
+	}
 	l.z.Info(msg, fields...)
 }
 
 func (l *L) Error(ctx context.Context, msg string, fields ...zap.Field) {
 	id := ctx.Value(loggerRequestIDKey).(string)
-	fields = append(fields, zap.String(loggerRequestIDKey, id))
+	if id != "" {
+		fields = append(fields, zap.String(loggerRequestIDKey, id))
+	}
 	l.z.Error(msg, fields...) 
 }
 
 func (l *L) Debug(ctx context.Context, msg string, fields ...zap.Field) {
 	id := ctx.Value(loggerRequestIDKey).(string)
-	fields = append(fields, zap.String(loggerRequestIDKey, id))
+	if id != "" {
+		fields = append(fields, zap.String(loggerRequestIDKey, id))
+	}
 	l.z.Debug(msg, fields...)
+}
+
+func (l *L) Sync() error {
+	return l.z.Sync()
 }
 
 func WithRequestID(ctx context.Context, requestID string) context.Context {

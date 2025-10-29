@@ -1,93 +1,150 @@
-# template
+# Order Service
 
+gRPC-сервис для управления заказами. Поддерживает создание, получение, обновление, удаление и список заказов.
 
+---
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Структура проекта
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.crja72.ru/golang/2025/spring/course/tasks/template.git
-git branch -M main
-git push -uf origin main
+.
+├── api/                 # .proto-файлы
+├── cmd/                 # Точка входа (main.go)
+├── config/              # Конфигурация (.env, config.yaml)
+├── internal/            # Приватная логика приложения
+│   ├── storage/         # Хранилище заказов (in-memory)
+│   └── transport/gRPC/  # gRPC-хендлеры и сервер
+├── logger/              # Логирование (на базе zap)
+├── pkg/api/test/        # Сгенерированный gRPC-код
+├── .golangci.yml        # Конфигурация линтера
+├── go.mod               # Зависимости Go
+└── Makefile             # Скрипты сборки и разработки
 ```
 
-## Integrate with your tools
+---
 
-- [ ] [Set up project integrations](https://gitlab.crja72.ru/golang/2025/spring/course/tasks/template/-/settings/integrations)
+## Требования
 
-## Collaborate with your team
+- **Go** 1.21+
+- **protoc** (Protocol Buffers Compiler) ≥ 3.15
+- **make** (опционально, но рекомендуется)
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+---
 
-## Test and Deploy
+## Настройка и запуск
 
-Use the built-in continuous integration in GitLab.
+### 1. Клонирование и подготовка
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```
+git clone https://gitlab.crja72.ru/golang/2025/spring/course/students/253943-Sofiytula71-gmail.com-course-1478
+cd 253943-Sofiytula71-gmail.com-course-1478
+```
 
-***
+### 2. Настройка окружения
 
-# Editing this README
+Создайте файл `.env` на основе шаблона:
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+```
+ENV_LOGLEVEL=debug      # Уровень логирования
 
-## Suggestions for a good README
+GRPC_PORT=50051         # Порт запуска gRPC сервера
+GRPC_HOST=localhost     # Хост запуска gRPC сервера
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### 3. Генерация gRPC-кода
 
-## Name
-Choose a self-explaining name for your project.
+```
+make generate
+```
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+> Эта команда прочитает `api/order.proto` и сгенерирует Go-файлы в `pkg/api/test/`.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### 4. Сборка и запуск
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```
+make run
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Сервер запустится на адресе, указанном в конфигурации (по умолчанию `localhost:50051`).
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+---
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## Конфигурация
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Приложение использует **гибридную конфигурацию**:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+- Базовые настройки — из `config/config.yaml`
+- Переменные окружения — из `config/.env` (или системных переменных)
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+### Пример `.env`
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+```
+ENV_LOGLEVEL=debug
+GRPC_HOST=localhost
+GRPC_PORT=50051
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### Пример `config.yaml`
 
-## License
-For open source projects, say how it is licensed.
+```
+env:
+  loglevel: "info"  # будет переопределён, если задан ENV_LOGLEVEL
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+grpc:
+  host: "0.0.0.0"
+  port: 50051
+```
+
+### Описание переменных
+
+| Переменная     | По умолчанию | Описание                                                |
+| -------------- | ------------ | ------------------------------------------------------- |
+| `ENV_LOGLEVEL` | `info`       | Уровень логирования (`debug`, `info`, `warn`, `error`). |
+| `GRPC_HOST`    | `0.0.0.0`    | Хост, на котором слушает gRPC-сервер.                   |
+| `GRPC_PORT`    | `50051`      | Порт gRPC-сервера.                                      |
+
+---
+
+## Доступные команды Make
+
+```
+make build     # Собрать бинарник
+make run       # Собрать и запустить сервер
+make generate  # Пересоздать gRPC-код из .proto
+make lint      # Проверить код линтером
+make test      # Запустить тесты
+make clean     # Удалить бинарник
+make help      # Показать справку
+```
+
+---
+
+## Тестирование
+
+В настоящий момент проект не содержит unit-тестов, но вы можете добавить их в соответствующие пакеты (`internal/storage`, `internal/transport/gRPC` и т.д.).
+
+Запуск тестов:
+
+```
+make test
+```
+
+---
+
+## gRPC API
+
+Сервис реализует следующие методы:
+
+| Метод         | Запрос               | Ответ                 |
+| ------------- | -------------------- | --------------------- |
+| `CreateOrder` | `CreateOrderRequest` | `CreateOrderResponse` |
+| `GetOrder`    | `GetOrderRequest`    | `GetOrderResponse`    |
+| `UpdateOrder` | `UpdateOrderRequest` | `UpdateOrderResponse` |
+| `DeleteOrder` | `DeleteOrderRequest` | `DeleteOrderResponse` |
+| `ListOrders`  | `ListOrdersRequest`  | `ListOrdersResponse`  |
+
+Для отладки можно использовать:
+
+- Postman (с поддержкой gRPC)
+
+> Сервер включает **gRPC Reflection**, поэтому клиенты могут автоматически обнаруживать методы.

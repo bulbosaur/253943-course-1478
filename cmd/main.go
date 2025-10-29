@@ -9,6 +9,8 @@ import (
 	v1 "lyceum/internal/transport/gRPC"
 	lg "lyceum/logger"
 	"net"
+	"os"
+	"os/signal"
 	"path/filepath"
 
 	pb "lyceum/pkg/api/test"
@@ -30,8 +32,12 @@ func main() {
 		log.Print("failed to load config:", err)
 	}
 
-	logger, _ := lg.NewLogger(cfg.Env.LogLevel)
-	lg.GlobalLogger = logger
+	logger, err := lg.NewLogger(cfg.Env.LogLevel)
+	if err != nil {
+    log.Fatalf("failed to create logger: %v", err)
+	}
+	defer logger.Sync()
+	
 	
 	ctx := lg.WithRequestID(context.Background(), "")
 	ctx = lg.WithLogger(ctx, logger)
@@ -42,11 +48,10 @@ func main() {
 	orderService := v1.NewOrderServiceServer(orderStorage)
 
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(v1.LoggingUnaryInterceptor),
+		grpc.UnaryInterceptor(v1.LoggingUnaryInterceptor(logger)),
 	)
 
 	pb.RegisterOrderServiceServer(grpcServer, orderService)
-
 	reflection.Register(grpcServer)
 
 	addr := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
@@ -63,5 +68,10 @@ func main() {
 		logger.Error(ctx, "main.StartGrpc: failed to serve", zap.String("addr", addr), zap.Error(err))
 	}
 
-	select {}
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+	<-stop
+
+	logger.Info(ctx, "shutting down gRPC server")
+	grpcServer.GracefulStop()
 }

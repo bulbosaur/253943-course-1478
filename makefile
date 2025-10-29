@@ -1,39 +1,48 @@
-include .env
+BINARY_NAME := server
 
-BINARY_NAME=server
-CMD_DIR=./cmd
-PROTO_DIR=./proto
-OUT_DIR=./pkg/api
-PROTO_FILE=$(PROTO_DIR)/test.proto
+PROTO_FILE := api/order.proto
+PROTO_OUTPUT_DIR := pkg/api/test
 
-GO=go
-PROTOC=protoc
+GO := go
+PROTOC := protoc
+GOLANGCI_LINT := golangci-lint
 
-.PHONY: help
-help:
-	@echo "Доступные команды:"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+.PHONY: all build run generate lint test clean help
 
-.PHONY: proto-gen
-proto-gen: check-deps
-	@echo "Генерация gRPC-кода из $(PROTO_FILE)..."
-	$(PROTOC) --go_out=$(OUT_DIR) --go_opt=paths=source_relative \
-		--go-grpc_out=$(OUT_DIR) --go-grpc_opt=paths=source_relative \
-		$(PROTO_FILE)
-	@echo "Генерация завершена."
+all: build
 
-.PHONY: build
 build:
-	@echo "Сборка бинарника..."
-	$(GO) build -o $(BINARY_NAME) $(CMD_DIR)
-	@echo "Бинарник $(BINARY_NAME) собран."
+	$(GO) build -o $(BINARY_NAME) ./cmd
 
-.PHONY: run
 run: build
-	@echo "Запуск сервера..."
 	./$(BINARY_NAME)
 
-.PHONY: clean
+generate:
+	@mkdir -p $(PROTO_OUTPUT_DIR)
+	$(PROTOC) \
+		--go_out=$(PROTO_OUTPUT_DIR) \
+		--go_opt=paths=source_relative \
+		--go-grpc_out=$(PROTO_OUTPUT_DIR) \
+		--go-grpc_opt=paths=source_relative \
+		$(PROTO_FILE)
+
+lint:
+	$(GOLANGCI_LINT) run
+
+test:
+	$(GO) test -v ./...
+
 clean:
 	rm -f $(BINARY_NAME)
-	@echo "Бинарник удален."
+	# При желании можно также удалить сгенерированные файлы:
+	# rm -f $(PROTO_OUTPUT_DIR)/*.pb.go
+
+help:
+	@echo "Доступные команды:"
+	@echo "  build     — собрать бинарный файл"
+	@echo "  run       — собрать и запустить сервер"
+	@echo "  generate  — пересоздать gRPC-код из order.proto"
+	@echo "  lint      — проверить код с помощью golangci-lint"
+	@echo "  test      — запустить все тесты"
+	@echo "  clean     — удалить бинарник"
+	@echo "  help      — показать эту справку"

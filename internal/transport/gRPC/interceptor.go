@@ -6,25 +6,12 @@ import (
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
-func LoggingUnaryInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-	var reqID string
-
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		md = metadata.MD{}
+func LoggingUnaryInterceptor(log logger.Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		ctx = logger.WithRequestID(ctx, uuid.NewString())
+		ctx = logger.WithLogger(ctx, log)
+		return handler(ctx, req)
 	}
-
-	if listID := md["x-request-id"]; len(listID) > 0 {
-		reqID = listID[0]
-	} else {
-		reqID = uuid.NewString()
-	}
-
-	ctx = logger.WithRequestID(ctx, reqID)
-	ctx = logger.WithLogger(ctx, logger.GlobalLogger)
-
-	return handler(ctx, req)
 }
