@@ -24,6 +24,9 @@ generate:
 		--go_opt=paths=source_relative \
 		--go-grpc_out=$(PROTO_OUTPUT_DIR) \
 		--go-grpc_opt=paths=source_relative \
+		--grpc-gateway_out=$(PROTO_OUTPUT_DIR) \
+		--grpc-gateway_opt=paths=source_relative \
+		--grpc-gateway_opt=generate_unbound_methods=true \
 		$(PROTO_FILE)
 
 lint:

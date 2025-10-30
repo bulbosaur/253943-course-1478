@@ -80,17 +80,26 @@ make run
 
 ```
 ENV_LOGLEVEL=debug
-GRPC_HOST=localhost
+
 GRPC_PORT=50051
+GRPC_HOST=localhost
+
+HTTP_PORT=8080
+HTTP_HOST=localhost
+HTTP_TIMEOUT=30s
+
 ```
 
 ### Описание переменных
 
-| Переменная     | По умолчанию | Описание                                                |
-| -------------- | ------------ | ------------------------------------------------------- |
-| `ENV_LOGLEVEL` | `info`       | Уровень логирования (`debug`, `info`, `warn`, `error`). |
-| `GRPC_HOST`    | `0.0.0.0`    | Хост, на котором слушает gRPC-сервер.                   |
-| `GRPC_PORT`    | `50051`      | Порт gRPC-сервера.                                      |
+| Переменная     | По умолчанию | Описание                                               |
+| -------------- | ------------ | ------------------------------------------------------ |
+| `ENV_LOGLEVEL` | `info`       | Уровень логирования (`debug`, `info`, `warn`, `error`) |
+| `GRPC_HOST`    | `0.0.0.0`    | Хост, на котором слушает gRPC-сервер                   |
+| `GRPC_PORT`    | `50051`      | Порт gRPC-сервера                                      |
+| `GRPC_HOST`    | `0.0.0.0`    | Хост, на котором слушает HTTP-сервер                   |
+| `HTTP_PORT`    | `8080`       | Порт HTTP-сервера                                      |
+| `HTTP_timeout` | `30s`        | таймаут HTTP-сервера                                   |
 
 ---
 
@@ -137,3 +146,19 @@ make test
 - Postman (с поддержкой gRPC)
 
 > Сервер включает **gRPC Reflection**, поэтому клиенты могут автоматически обнаруживать методы.
+
+## REST HTTP API
+
+При запуске REST-сервера на :8080, будут доступны следующие POST-запросы:
+
+| Метод GRPC    | HTTP метод | HTTP ручка                                           |
+| ------------- | ---------- | ---------------------------------------------------- |
+| `CreateOrder` | `POST`     | `http://localhost:8080/api.OrderService/CreateOrder` |
+| `GetOrder`    | `POST`     | `http://localhost:8080/api.OrderService/GetOrder`    |
+| `UpdateOrder` | `POST`     | `http://localhost:8080/api.OrderService/UpdateOrder` |
+| `DeleteOrder` | `POST`     | `http://localhost:8080/api.OrderService/DeleteOrder` |
+| `ListOrders`  | `POST`     | `http://localhost:8080/api.OrderService/ListOrders`  |
+
+Для отладки можно использовать:
+
+- Postman
