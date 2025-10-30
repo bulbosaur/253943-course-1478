@@ -43,7 +43,7 @@ func main() {
 	ctx := lg.WithRequestID(context.Background(), "")
 	ctx = lg.WithLogger(ctx, logger)
 	
-	logger.Info(ctx, "starting debezium", zap.String("version", "test"), zap.Any("config", cfg))
+	logger.Info(ctx, "starting gRPC server", zap.String("version", "test"), zap.Any("config", cfg.GRPC))
 
 	orderStorage := storage.NewOrderStorage()
 	orderService := v1.NewOrderServiceServer(orderStorage)
@@ -55,19 +55,21 @@ func main() {
 	pb.RegisterOrderServiceServer(grpcServer, orderService)
 	reflection.Register(grpcServer)
 
-	addr := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
+	grpcAddr := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
 	
-	l, err := net.Listen("tcp", addr)
+	l, err := net.Listen("tcp", grpcAddr)
 	if err != nil {
-		logger.Error(ctx, "main.StartGrpc: failed to listen", zap.String("addr", addr), zap.Error(err))
+		logger.Error(ctx, "main.StartGrpc: failed to listen", zap.String("addr", grpcAddr), zap.Error(err))
 		return
 	}
 
-	go srv.RunRest()
+	httpAddr := fmt.Sprintf("%s:%d", cfg.HTTP.Host, cfg.HTTP.Port)
+	httpTimeout := cfg.HTTP.Timeout
+	go srv.RunRest(ctx, httpAddr, httpTimeout)
 
 	err = grpcServer.Serve(l)
 	if err != nil {
-		logger.Error(ctx, "main.StartGrpc: failed to serve", zap.String("addr", addr), zap.Error(err))
+		logger.Error(ctx, "main.StartGrpc: failed to serve", zap.String("addr", httpAddr), zap.Error(err))
 	}
 
 	stop := make(chan os.Signal, 1)

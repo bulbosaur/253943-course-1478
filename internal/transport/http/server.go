@@ -2,15 +2,16 @@ package srv
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
 
+	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -42,8 +43,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.srv.Shutdown(ctx)
 }
 
-func RunRest() {
-	ctx := context.Background()
+func RunRest(ctx context.Context, addr string, timeout time.Duration) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	mux := runtime.NewServeMux()
@@ -52,8 +52,20 @@ func RunRest() {
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("server listening at 8081")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           mux,
+		ReadTimeout:       timeout,
+		ReadHeaderTimeout: timeout,
+		WriteTimeout:      timeout,
+	}
+
+	l := logger.FromContext(ctx)
+	l.Info(ctx, "starting HTTP server", zap.String("version", "test"), zap.Any("addr", addr), zap.Any("timeout", timeout))
+	
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		l.Error(ctx, "http.RunRest: HTTP server failed", zap.Error(err))
 		panic(err)
 	}
 }
