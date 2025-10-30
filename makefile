@@ -34,8 +34,6 @@ test:
 
 clean:
 	rm -f $(BINARY_NAME)
-	# При желании можно также удалить сгенерированные файлы:
-	# rm -f $(PROTO_OUTPUT_DIR)/*.pb.go
 
 help:
 	@echo "Доступные команды:"
