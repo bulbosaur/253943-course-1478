@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -13,6 +14,7 @@ import (
 type Config struct {
 	Env  EnvConfig  `mapstructure:"env"`
 	GRPC GRPCConfig `mapstructure:"grpc"`
+	HTTP HTTPConfig `mapstructure:"http"`
 }
 
 type EnvConfig struct {
@@ -22,6 +24,12 @@ type EnvConfig struct {
 type GRPCConfig struct {
 	Host string `mapstructure:"host"`
 	Port int    `mapstructure:"port"`
+}
+
+type HTTPConfig struct {
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+	Timeout time.Duration `mapstructure:"timeout"`
 }
 
 func loadEnvFile(envPath string) error {
@@ -77,7 +85,9 @@ func LoadConfig(envPath, yamlPath string) (*Config, error) {
 	viper.AutomaticEnv()
 
 	viper.BindEnv("grpc.host", "GRPC_HOST")
+	viper.BindEnv("http.host", "HTTP_HOST")
 	viper.BindEnv("grpc.port", "GRPC_PORT")
+	viper.BindEnv("http.port", "HTTP_PORT")
 
 	var cfg Config
 	err = viper.Unmarshal(&cfg)

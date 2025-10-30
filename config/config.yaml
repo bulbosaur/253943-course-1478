@@ -4,3 +4,8 @@ env:
 grpc:
   port: ${GRPC_PORT}
   host: ${GRPC_HOST}
+
+http:
+  port: ${HTTP_PORT}
+  host: ${HTTP_HOST}
+  timeout: ${HTTP_TIMEOUT}
