@@ -7,6 +7,7 @@ import (
 	"lyceum/config"
 	"lyceum/internal/storage"
 	v1 "lyceum/internal/transport/gRPC"
+	srv "lyceum/internal/transport/http"
 	lg "lyceum/logger"
 	"net"
 	"os"
@@ -62,6 +63,7 @@ func main() {
 		return
 	}
 
+	go srv.RunRest()
 
 	err = grpcServer.Serve(l)
 	if err != nil {
