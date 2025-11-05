@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
 
@@ -82,15 +83,17 @@ func (s *OrderServiceServer) DeleteOrder(
 		err  error
 	)
 
-	res := s.storage.DeleteOrder(req.GetId())
+	id := req.GetId()
+	log.Println(id)
+	res := s.storage.DeleteOrder(id)
 	resp.Success = res
 
 	if !res {
-		err = fmt.Errorf("qRPC.DeleteOrder: can't delete an order ID %s", req.GetId())
+		err = fmt.Errorf("gRPC.DeleteOrder: can't delete an order ID %s", id)
 	}
 
 	l := logger.FromContext(ctx)
-	l.Debug(ctx, "order was updated", zap.String("orderID", req.GetId()))
+	l.Debug(ctx, "order was deletes", zap.String("orderID", id))
 
 	return &resp, err
 }

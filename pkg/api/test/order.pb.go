@@ -7,6 +7,7 @@
 package test
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -541,7 +542,7 @@ var File_api_order_proto protoreflect.FileDescriptor
 
 const file_api_order_proto_rawDesc = "" +
 	"\n" +
-	"\x0fapi/order.proto\x12\x03api\"G\n" +
+	"\x0fapi/order.proto\x12\x03api\x1a\x1capi/google/annotations.proto\"G\n" +
 	"\x05Order\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04item\x18\x02 \x01(\tR\x04item\x12\x1a\n" +
@@ -570,14 +571,14 @@ const file_api_order_proto_rawDesc = "" +
 	"\x11ListOrdersRequest\"8\n" +
 	"\x12ListOrdersResponse\x12\"\n" +
 	"\x06orders\x18\x01 \x03(\v2\n" +
-	".api.OrderR\x06orders2\xcc\x02\n" +
-	"\fOrderService\x12@\n" +
-	"\vCreateOrder\x12\x17.api.CreateOrderRequest\x1a\x18.api.CreateOrderResponse\x127\n" +
-	"\bGetOrder\x12\x14.api.GetOrderRequest\x1a\x15.api.GetOrderResponse\x12@\n" +
-	"\vUpdateOrder\x12\x17.api.UpdateOrderRequest\x1a\x18.api.UpdateOrderResponse\x12@\n" +
-	"\vDeleteOrder\x12\x17.api.DeleteOrderRequest\x1a\x18.api.DeleteOrderResponse\x12=\n" +
+	".api.OrderR\x06orders2\x87\x04\n" +
+	"\fOrderService\x12f\n" +
+	"\vCreateOrder\x12\x17.api.CreateOrderRequest\x1a\x18.api.CreateOrderResponse\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/OrderService/CreateOrder\x12\\\n" +
+	"\bGetOrder\x12\x14.api.GetOrderRequest\x1a\x15.api.GetOrderResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/OrderService/GetOrder/{id}\x12f\n" +
+	"\vUpdateOrder\x12\x17.api.UpdateOrderRequest\x1a\x18.api.UpdateOrderResponse\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/OrderService/UpdateOrder\x12h\n" +
+	"\vDeleteOrder\x12\x17.api.DeleteOrderRequest\x1a\x18.api.DeleteOrderResponse\"&\x82\xd3\xe4\x93\x02 *\x1e/OrderService/DeleteOrder/{id}\x12_\n" +
 	"\n" +
-	"ListOrders\x12\x16.api.ListOrdersRequest\x1a\x17.api.ListOrdersResponseB\x0eZ\fpkg/api/testb\x06proto3"
+	"ListOrders\x12\x16.api.ListOrdersRequest\x1a\x17.api.ListOrdersResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/OrderService/ListOrdersB\x0eZ\fpkg/api/testb\x06proto3"
 
 var (
 	file_api_order_proto_rawDescOnce sync.Once
