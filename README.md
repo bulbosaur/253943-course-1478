@@ -13,11 +13,13 @@ gRPC-сервис для управления заказами. Поддержи
 ├── config/              # Конфигурация (.env, config.yaml)
 ├── internal/            # Приватная логика приложения
 │   ├── storage/         # Хранилище заказов (in-memory)
-│   └── transport/gRPC/  # gRPC-хендлеры и сервер
+│   └── transport/
+|       ├── /gRPC        # gRPC-хендлеры, интерсептор и сервер
+│       └── /http        # http сервер
 ├── logger/              # Логирование (на базе zap)
 ├── pkg/api/test/        # Сгенерированный gRPC-код
 ├── .golangci.yml        # Конфигурация линтера
-├── go.mod               # Зависимости Go
+├── go.mod
 └── Makefile             # Скрипты сборки и разработки
 ```
 
@@ -149,15 +151,15 @@ make test
 
 ## REST HTTP API
 
-При запуске REST-сервера на :8080, будут доступны следующие POST-запросы:
+При запуске REST-сервера на :8080, будут доступны следующие запросы:
 
-| Метод GRPC    | HTTP метод | HTTP ручка                                           |
-| ------------- | ---------- | ---------------------------------------------------- |
-| `CreateOrder` | `POST`     | `http://localhost:8080/api.OrderService/CreateOrder` |
-| `GetOrder`    | `POST`     | `http://localhost:8080/api.OrderService/GetOrder`    |
-| `UpdateOrder` | `POST`     | `http://localhost:8080/api.OrderService/UpdateOrder` |
-| `DeleteOrder` | `POST`     | `http://localhost:8080/api.OrderService/DeleteOrder` |
-| `ListOrders`  | `POST`     | `http://localhost:8080/api.OrderService/ListOrders`  |
+| Метод GRPC    | HTTP метод | HTTP ручка                                                |
+| ------------- | ---------- | --------------------------------------------------------- |
+| `CreateOrder` | `POST`     | `http://localhost:8080/api.OrderService/CreateOrder`      |
+| `GetOrder`    | `GET `     | `http://localhost:8080/api.OrderService/GetOrder/{id}`    |
+| `UpdateOrder` | `POST`     | `http://localhost:8080/api.OrderService/UpdateOrder`      |
+| `DeleteOrder` | `DELETE`   | `http://localhost:8080/api.OrderService/DeleteOrder/{id}` |
+| `ListOrders`  | `GET`      | `http://localhost:8080/api.OrderService/ListOrders`       |
 
 Для отладки можно использовать:
 

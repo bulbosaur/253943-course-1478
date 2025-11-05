@@ -20,6 +20,7 @@ run: build
 generate:
 	@mkdir -p $(PROTO_OUTPUT_DIR)
 	$(PROTOC) \
+		--proto_path=api \
 		--go_out=$(PROTO_OUTPUT_DIR) \
 		--go_opt=paths=source_relative \
 		--go-grpc_out=$(PROTO_OUTPUT_DIR) \
