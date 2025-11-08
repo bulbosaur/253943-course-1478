@@ -10,6 +10,7 @@ import (
 	pb "lyceum/pkg/api/test"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -20,9 +21,10 @@ const defaultReadHeaderTimeout time.Duration = 5
 
 type Server struct {
 	srv *http.Server
+	db *pgxpool.Pool
 }
 
-func NewServer(port int) *Server {
+func NewServer(port int, db *pgxpool.Pool) *Server {
 	readHeaderTimeout := viper.GetDuration("HTTP_TIMEOUT") // Проверить, корректно ли
 	println(readHeaderTimeout)
 	
@@ -32,7 +34,10 @@ func NewServer(port int) *Server {
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
-	return &Server{srv: &srv}
+	return &Server{
+		srv: &srv,
+		db: db,
+	}
 }
 
 func (s *Server) Start() error {

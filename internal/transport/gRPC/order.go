@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
 
@@ -27,9 +26,14 @@ func (s *OrderServiceServer) CreateOrder(
 		return &resp, status.Error(codes.InvalidArgument, "gRPC.CreateOrder: quantity must be positive")
 	}
 
-	orderID := s.storage.CreateOrder(req.GetItem(), req.GetQuantity())
-
 	l := logger.FromContext(ctx)
+
+	orderID, err := s.repository.CreateOrder(ctx, req.GetItem(), req.GetQuantity())
+	if err != nil {
+		l.Error(ctx, "gRPC.CreateOrder", zap.Any("error", err))
+		return nil, fmt.Errorf("gRPC.CreateOrder: %w", err)
+	}
+
 	l.Debug(ctx, "new order was created", zap.String("orderID", orderID))
 
 	resp.Id = orderID
@@ -40,7 +44,7 @@ func (s *OrderServiceServer) CreateOrder(
 func (s *OrderServiceServer) GetOrder(ctx context.Context, req *pb.GetOrderRequest) (*pb.GetOrderResponse, error) {
 	var resp pb.GetOrderResponse
 
-	order, err := s.storage.GetOrder(req.GetId())
+	order, err := s.repository.GetOrder(ctx, req.GetId())
 
 	l := logger.FromContext(ctx)
 	
@@ -61,14 +65,20 @@ func (s *OrderServiceServer) UpdateOrder(
 ) (*pb.UpdateOrderResponse, error) {
 	var resp pb.UpdateOrderResponse
 
+	l := logger.FromContext(ctx)
+
 	if req.GetId() == "" {
 		return &resp, fmt.Errorf("gRPC.UpdateOrder: %w", errors.New("orderID is empty"))
 	}
 
-	newOrder := s.storage.UpdateOrder(req.GetId(), req.GetItem(), req.GetQuantity())
+	newOrder, err  := s.repository.UpdateOrder(ctx, req.GetId(), req.GetItem(), req.GetQuantity())
+	if err != nil {
+		l.Error(ctx, "gRPC.UpdateOrder", zap.Any("error", err))
+		return nil, fmt.Errorf("gRPC.UpdateOrder: %w", err)
+	}
+
 	resp.Order = newOrder
 
-	l := logger.FromContext(ctx)
 	l.Debug(ctx, "order was updated", zap.Any("newOrder", newOrder))
 
 	return &resp, nil
@@ -84,15 +94,17 @@ func (s *OrderServiceServer) DeleteOrder(
 	)
 
 	id := req.GetId()
-	log.Println(id)
-	res := s.storage.DeleteOrder(id)
+	l := logger.FromContext(ctx)
+	
+	res, err := s.repository.DeleteOrder(ctx, id)
 	resp.Success = res
 
 	if !res {
+		l.Error(ctx, "gRPC.DeleteOrder", zap.Any("error", err))
 		err = fmt.Errorf("gRPC.DeleteOrder: can't delete an order ID %s", id)
+		return nil, err
 	}
 
-	l := logger.FromContext(ctx)
 	l.Debug(ctx, "order was deletes", zap.String("orderID", id))
 
 	return &resp, err
@@ -102,9 +114,18 @@ func (s *OrderServiceServer) ListOrders(
 	ctx context.Context,
 	req *pb.ListOrdersRequest,
 ) (*pb.ListOrdersResponse, error) {
-	var resp pb.ListOrdersResponse
+	var (
+		resp pb.ListOrdersResponse
+		err error
+	)
+	
+	l := logger.FromContext(ctx)
 
-	resp.Orders = s.storage.ListOrders()
+	resp.Orders, err = s.repository.ListOrders(ctx)
+	if err != nil {
+		l.Error(ctx, "gRPC.ListOrder", zap.Any("error", err))
+		return nil, fmt.Errorf("gRPC.ListOder: %s", err)
+	}
 
 	return &resp, nil
 }

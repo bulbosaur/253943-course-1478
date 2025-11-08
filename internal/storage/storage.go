@@ -14,12 +14,6 @@ type OrderStorage struct {
 	Mu     sync.Mutex
 }
 
-func NewOrderStorage() *OrderStorage {
-	return &OrderStorage{
-		Orders: make(map[string]*pb.Order),
-	}
-}
-
 func (s *OrderStorage) CreateOrder(item string, quantity int32) string {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()

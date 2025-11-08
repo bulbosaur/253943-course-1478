@@ -1,19 +1,18 @@
 package v1
 
 import (
-	"lyceum/internal/storage"
-
+	"lyceum/internal/repository"
 	pb "lyceum/pkg/api/test"
 )
 
 type OrderServiceServer struct {
 	pb.UnimplementedOrderServiceServer
 
-	storage *storage.OrderStorage
+	repository repository.OrderRepository
 }
 
-func NewOrderServiceServer(storage *storage.OrderStorage) *OrderServiceServer {
+func NewOrderServiceServer(repo repository.OrderRepository) *OrderServiceServer {
 	return &OrderServiceServer{
-		storage: storage,
+		repository: repo,
 	}
 }

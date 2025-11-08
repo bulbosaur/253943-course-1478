@@ -4,6 +4,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"lyceum/pkg/db"
 	"os"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ type Config struct {
 	Env  EnvConfig  `mapstructure:"env"`
 	GRPC GRPCConfig `mapstructure:"grpc"`
 	HTTP HTTPConfig `mapstructure:"http"`
+	PostgreSQL db.Config `mapstructure:"postgres"`
 }
 
 type EnvConfig struct {

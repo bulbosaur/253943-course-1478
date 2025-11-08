@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"lyceum/config"
-	"lyceum/internal/storage"
+	"lyceum/internal/repository"
 	v1 "lyceum/internal/transport/gRPC"
 	srv "lyceum/internal/transport/http"
 	lg "lyceum/logger"
@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 
 	pb "lyceum/pkg/api/test"
+	"lyceum/pkg/db"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -35,7 +36,7 @@ func main() {
 
 	logger, err := lg.NewLogger(cfg.Env.LogLevel)
 	if err != nil {
-    log.Fatalf("failed to create logger: %v", err)
+    	log.Fatalf("failed to create logger: %v", err)
 	}
 	defer logger.Sync()
 	
@@ -45,8 +46,14 @@ func main() {
 	
 	logger.Info(ctx, "starting gRPC server", zap.String("version", "test"), zap.Any("config", cfg.GRPC))
 
-	orderStorage := storage.NewOrderStorage()
-	orderService := v1.NewOrderServiceServer(orderStorage)
+	orderPostgres, err := db.New(cfg.PostgreSQL)
+	if err != nil {
+		log.Fatalf("failed to create db: %v", err)
+	}
+	logger.Debug(ctx, "successful connection to the database", zap.Any("config", cfg.PostgreSQL))
+
+	orderRepo := repository.NewPostgresOrderRepository(orderPostgres.Pool)
+	orderService := v1.NewOrderServiceServer(orderRepo)
 
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(v1.LoggingUnaryInterceptor(logger)),
