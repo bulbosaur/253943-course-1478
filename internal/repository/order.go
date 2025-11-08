@@ -137,7 +137,6 @@ func (s *PostgresOrderRepository) UpdateOrder(ctx context.Context, strID, item s
 func (s *PostgresOrderRepository) ListOrders(ctx context.Context) ([]*pb.Order, error) {
 	var (
 		id int32
-		order pb.Order
 		orders []*pb.Order
 	)
 
@@ -150,6 +149,7 @@ func (s *PostgresOrderRepository) ListOrders(ctx context.Context) ([]*pb.Order, 
 	defer rows.Close()
 
 	for rows.Next() {
+		var order pb.Order
 		err = rows.Scan(&id, &order.Item, &order.Quantity)
 		if err != nil {
 			return nil, err
