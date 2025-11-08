@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,9 +21,11 @@ type Database struct {
 }
 
 func New(config Config) (*Database, error) {
-	dataSource := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
-		config.Username, config.Password, config.Host, config.Port, config.DbName)
-
+	a, _ := strconv.Atoi(config.Port)
+	dataSource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable&search_path=public",
+		config.Username, config.Password, config.Host, a, config.DbName)
+	
+	// log.Println("КОНФИГ В NEW: config.Username:", config.Username, "config.Password:", config.Password, "config.Host:", config.Host, "config.Port:",  config.Port, "config.DbName:", config.DbName)
 		
 	pool, err := pgxpool.New(context.Background(), dataSource)
 	if err != nil {
