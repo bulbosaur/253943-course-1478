@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	redis "lyceum/internal/storage"
 	"lyceum/pkg/db"
 	"os"
 	"strings"
@@ -16,6 +17,7 @@ type Config struct {
 	GRPC GRPCConfig `mapstructure:"grpc"`
 	HTTP HTTPConfig `mapstructure:"http"`
 	PostgreSQL db.Config `mapstructure:"postgres"`
+	Redis redis.Config `mapstructure:"redis"`
 }
 
 type EnvConfig struct {

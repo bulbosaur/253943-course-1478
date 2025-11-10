@@ -6,6 +6,7 @@ import (
 	"log"
 	"lyceum/config"
 	"lyceum/internal/repository"
+	"lyceum/internal/storage"
 	v1 "lyceum/internal/transport/gRPC"
 	srv "lyceum/internal/transport/http"
 	lg "lyceum/logger"
@@ -46,14 +47,25 @@ func main() {
 	
 	logger.Info(ctx, "starting gRPC server", zap.String("version", "test"), zap.Any("config", cfg.GRPC))
 
-	orderPostgres, err := db.New(cfg.PostgreSQL)
+	orderPostgres, err := db.NewPostgres(cfg.PostgreSQL)
 	if err != nil {
-		log.Fatalf("failed to create db: %v", err)
+		logger.Error(ctx, "main.NewPostgres: failed to create db", zap.String("addr", fmt.Sprintf("%s:%d", cfg.PostgreSQL.Host, cfg.GRPC.Port)), zap.Error(err))
+		os.Exit(1)
 	}
 	logger.Debug(ctx, "successful connection to the database", zap.Any("config", cfg.PostgreSQL))
 
 	orderRepo := repository.NewPostgresOrderRepository(orderPostgres.Pool)
-	orderService := v1.NewOrderServiceServer(orderRepo)
+
+	orderRedis, err := storage.NewRedisClient(ctx, cfg.Redis)
+	if err != nil {
+		logger.Error(ctx, "main.NewRedisClient: failed to create redis client", zap.String("addr", fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)), zap.Error(err))
+		os.Exit(1)
+	}
+	logger.Debug(ctx, "successful connection to the redis", zap.Any("config", cfg.Redis))
+
+	orderCache := storage.NewRedisOrderCache(orderRedis)
+
+	orderService := v1.NewOrderServiceServer(orderRepo, orderCache)
 
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(v1.LoggingUnaryInterceptor(logger)),

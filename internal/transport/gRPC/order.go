@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -43,16 +45,23 @@ func (s *OrderServiceServer) CreateOrder(
 
 func (s *OrderServiceServer) GetOrder(ctx context.Context, req *pb.GetOrderRequest) (*pb.GetOrderResponse, error) {
 	var resp pb.GetOrderResponse
-
-	order, err := s.repository.GetOrder(ctx, req.GetId())
-
 	l := logger.FromContext(ctx)
-	
+	id := req.GetId()
+
+	order, err := s.cache.GetOrder(ctx, id)
+	if err == nil {
+		log.Println("Взято из редиса")
+	}
 	if err != nil {
-		l.Error(ctx, "gRPC.GetOrder", zap.Any("error", err))
-		return &pb.GetOrderResponse{}, fmt.Errorf("gRPC.GetOrder: %w", err)
+		order, err = s.repository.GetOrder(ctx, id)
+		if err != nil {
+			l.Error(ctx, "gRPC.GetOrder", zap.Any("error", err))
+			return &pb.GetOrderResponse{}, fmt.Errorf("gRPC.GetOrder: %w", err)
+		}
 	}
 	l.Debug(ctx, "order was got", zap.Any("order", order))
+
+	_ = s.cache.SetOrder(ctx, id, order, 10*time.Minute)
 
 	resp.Order = order
 
@@ -66,18 +75,23 @@ func (s *OrderServiceServer) UpdateOrder(
 	var resp pb.UpdateOrderResponse
 
 	l := logger.FromContext(ctx)
+	id :=  req.GetId()
+	item := req.GetItem()
+	quantity := req.GetQuantity()
 
-	if req.GetId() == "" {
+	if id == "" {
 		return &resp, fmt.Errorf("gRPC.UpdateOrder: %w", errors.New("orderID is empty"))
 	}
 
-	newOrder, err  := s.repository.UpdateOrder(ctx, req.GetId(), req.GetItem(), req.GetQuantity())
+	newOrder, err  := s.repository.UpdateOrder(ctx, id, item, quantity)
 	if err != nil {
 		l.Error(ctx, "gRPC.UpdateOrder", zap.Any("error", err))
 		return nil, fmt.Errorf("gRPC.UpdateOrder: %w", err)
 	}
 
 	resp.Order = newOrder
+
+	_ = s.cache.DeleteOrder(ctx, id)
 
 	l.Debug(ctx, "order was updated", zap.Any("newOrder", newOrder))
 
@@ -104,6 +118,8 @@ func (s *OrderServiceServer) DeleteOrder(
 		err = fmt.Errorf("gRPC.DeleteOrder: can't delete an order ID %s", id)
 		return nil, err
 	}
+
+	_ = s.cache.DeleteOrder(ctx, id)
 
 	l.Debug(ctx, "order was deletes", zap.String("orderID", id))
 

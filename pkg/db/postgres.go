@@ -20,13 +20,11 @@ type Database struct {
 	Pool *pgxpool.Pool
 }
 
-func New(config Config) (*Database, error) {
+func NewPostgres(config Config) (*Database, error) {
 	a, _ := strconv.Atoi(config.Port)
 	dataSource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable&search_path=public",
 		config.Username, config.Password, config.Host, a, config.DbName)
 	
-	// log.Println("КОНФИГ В NEW: config.Username:", config.Username, "config.Password:", config.Password, "config.Host:", config.Host, "config.Port:",  config.Port, "config.DbName:", config.DbName)
-		
 	pool, err := pgxpool.New(context.Background(), dataSource)
 	if err != nil {
 		return nil, err

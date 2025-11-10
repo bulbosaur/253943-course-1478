@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 
 	pb "lyceum/pkg/api/test"
@@ -34,21 +33,6 @@ func NewPostgresOrderRepository(pool *pgxpool.Pool) *PostgresOrderRepository {
 
 func (s *PostgresOrderRepository) CreateOrder(ctx context.Context, item string, quantity int32) (string, error) {
 	var newID int32
-
-	rows, _ := s.pool.Query(ctx,
-		`SELECT table_name FROM information_schema.tables
-		WHERE table_schema = 'public'
-		ORDER BY table_name`)
-	defer rows.Close()
-	for rows.Next() {
-		var name string
-		rows.Scan(&name)
-		fmt.Println(name)
-	}
-
-	// var path string
-	// _ = s.pool.QueryRow(ctx, "SHOW search_path").Scan(&path)
-	// log.Println("search_path =", path)
 
 	sql := `INSERT INTO public.orders (item, quantity) VALUES ($1, $2) RETURNING public.orders.id`
 
