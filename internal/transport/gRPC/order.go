@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
 	"time"
@@ -49,9 +48,6 @@ func (s *OrderServiceServer) GetOrder(ctx context.Context, req *pb.GetOrderReque
 	id := req.GetId()
 
 	order, err := s.cache.GetOrder(ctx, id)
-	if err == nil {
-		log.Println("Взято из редиса")
-	}
 	if err != nil {
 		order, err = s.repository.GetOrder(ctx, id)
 		if err != nil {
