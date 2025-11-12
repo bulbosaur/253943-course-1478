@@ -46,7 +46,7 @@ func main() {
 		cfg.PostgreSQL.Password,
 		cfg.PostgreSQL.Host,
 		portInt,
-		cfg.PostgreSQL.DbName,
+		cfg.PostgreSQL.DBName,
 	)
 
 	m, err := migrate.New(

@@ -13,7 +13,7 @@ type Config struct {
 	Password string `env:"POSTGRES_PASSWORD" env-default:"postgres"`
 	Host     string `env:"POSTGRES_HOST" env-default:"db"`
 	Port     string `env:"POSTGRES_PORT" env-default:"5432"`
-	DbName   string `env:"POSTGRES_DB" env-default:"postgres"`
+	DBName   string `env:"POSTGRES_DB" env-default:"postgres"`
 }
 
 type Database struct {
@@ -23,7 +23,7 @@ type Database struct {
 func NewPostgres(config Config) (*Database, error) {
 	a, _ := strconv.Atoi(config.Port)
 	dataSource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable&search_path=public",
-		config.Username, config.Password, config.Host, a, config.DbName)
+		config.Username, config.Password, config.Host, a, config.DBName)
 	
 	pool, err := pgxpool.New(context.Background(), dataSource)
 	if err != nil {

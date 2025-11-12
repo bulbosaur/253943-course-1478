@@ -111,7 +111,7 @@ func (s *PostgresOrderRepository) UpdateOrder(ctx context.Context, strID, item s
 	}
 
 	sql = `SELECT item, quantity FROM orders WHERE id = $1`
-	err = s.pool.QueryRow(ctx, sql, intID).Scan(order.Item, order.Quantity)
+	err = s.pool.QueryRow(ctx, sql, intID).Scan(&order.Item, &order.Quantity)
 
 	order.Id = strconv.Itoa(int(intID))
 

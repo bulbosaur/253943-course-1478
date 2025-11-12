@@ -17,8 +17,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const defaultReadHeaderTimeout time.Duration = 5
-
 type Server struct {
 	srv *http.Server
 	db *pgxpool.Pool
