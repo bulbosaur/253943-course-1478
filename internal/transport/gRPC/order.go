@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const DefaultCacheTimeLife = 10*time.Minute
+
 func (s *OrderServiceServer) CreateOrder(
 	ctx context.Context,
 	req *pb.CreateOrderRequest,
@@ -57,7 +59,7 @@ func (s *OrderServiceServer) GetOrder(ctx context.Context, req *pb.GetOrderReque
 	}
 	l.Debug(ctx, "order was got", zap.Any("order", order))
 
-	_ = s.cache.SetOrder(ctx, id, order, 10*time.Minute)
+	_ = s.cache.SetOrder(ctx, id, order, DefaultCacheTimeLife)
 
 	resp.Order = order
 
@@ -71,7 +73,7 @@ func (s *OrderServiceServer) UpdateOrder(
 	var resp pb.UpdateOrderResponse
 
 	l := logger.FromContext(ctx)
-	id :=  req.GetId()
+	id := req.GetId()
 	item := req.GetItem()
 	quantity := req.GetQuantity()
 
@@ -79,7 +81,7 @@ func (s *OrderServiceServer) UpdateOrder(
 		return &resp, fmt.Errorf("gRPC.UpdateOrder: %w", errors.New("orderID is empty"))
 	}
 
-	newOrder, err  := s.repository.UpdateOrder(ctx, id, item, quantity)
+	newOrder, err := s.repository.UpdateOrder(ctx, id, item, quantity)
 	if err != nil {
 		l.Error(ctx, "gRPC.UpdateOrder", zap.Any("error", err))
 		return nil, fmt.Errorf("gRPC.UpdateOrder: %w", err)
@@ -105,7 +107,7 @@ func (s *OrderServiceServer) DeleteOrder(
 
 	id := req.GetId()
 	l := logger.FromContext(ctx)
-	
+
 	res, err := s.repository.DeleteOrder(ctx, id)
 	resp.Success = res
 
@@ -128,15 +130,15 @@ func (s *OrderServiceServer) ListOrders(
 ) (*pb.ListOrdersResponse, error) {
 	var (
 		resp pb.ListOrdersResponse
-		err error
+		err  error
 	)
-	
+
 	l := logger.FromContext(ctx)
 
 	resp.Orders, err = s.repository.ListOrders(ctx)
 	if err != nil {
 		l.Error(ctx, "gRPC.ListOrder", zap.Any("error", err))
-		return nil, fmt.Errorf("gRPC.ListOder: %s", err)
+		return nil, fmt.Errorf("gRPC.ListOder: %w", err)
 	}
 
 	return &resp, nil

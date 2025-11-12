@@ -13,11 +13,11 @@ import (
 )
 
 type Config struct {
-	Env  EnvConfig  `mapstructure:"env"`
-	GRPC GRPCConfig `mapstructure:"grpc"`
-	HTTP HTTPConfig `mapstructure:"http"`
-	PostgreSQL db.Config `mapstructure:"postgres"`
-	Redis redis.Config `mapstructure:"redis"`
+	Env        EnvConfig    `mapstructure:"env"`
+	GRPC       GRPCConfig   `mapstructure:"grpc"`
+	HTTP       HTTPConfig   `mapstructure:"http"`
+	PostgreSQL db.Config    `mapstructure:"postgres"`
+	Redis      redis.Config `mapstructure:"redis"`
 }
 
 type EnvConfig struct {
@@ -30,10 +30,12 @@ type GRPCConfig struct {
 }
 
 type HTTPConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Host    string        `mapstructure:"host"`
+	Port    int           `mapstructure:"port"`
 	Timeout time.Duration `mapstructure:"timeout"`
 }
+
+const keyValues = 2
 
 func loadEnvFile(envPath string) error {
 	data, err := os.ReadFile(envPath)
@@ -48,8 +50,8 @@ func loadEnvFile(envPath string) error {
 			continue
 		}
 
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
+		parts := strings.SplitN(line, "=", keyValues)
+		if len(parts) != keyValues {
 			continue
 		}
 

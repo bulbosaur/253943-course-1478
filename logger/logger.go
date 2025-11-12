@@ -6,11 +6,13 @@ import (
 	"go.uber.org/zap"
 )
 
+type contextKey string
+
 const (
-	defaultLogLevel = "info"
-	loggerRequestIDKey = "x-request-id"
-	loggerTraceIDKey = "x-trace-id"
-	loggerKey          = "logger"
+	defaultLogLevel               = "info"
+	loggerRequestIDKey contextKey = "x-request-id"
+	loggerTraceIDKey   contextKey = "x-trace-id"
+	loggerKey          contextKey = "logger"
 )
 
 type Logger interface {
@@ -37,14 +39,14 @@ func FromContext(ctx context.Context) Logger {
 }
 
 func NewLogger(loglevel string) (Logger, error) {
-	LoggerCfg := zap.NewProductionConfig()
-	LoggerCfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	loggerCfg := zap.NewProductionConfig()
+	loggerCfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 
 	if loglevel == "debug" {
-		LoggerCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+		loggerCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
 	}
 
-	logger, err := LoggerCfg.Build()
+	logger, err := loggerCfg.Build()
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +59,7 @@ func NewLogger(loglevel string) (Logger, error) {
 func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {
 	id := ctx.Value(loggerRequestIDKey).(string)
 	if id != "" {
-		fields = append(fields, zap.String(loggerRequestIDKey, id))
+		fields = append(fields, zap.String(string(loggerRequestIDKey), id))
 	}
 	l.z.Info(msg, fields...)
 }
@@ -65,15 +67,15 @@ func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {
 func (l *L) Error(ctx context.Context, msg string, fields ...zap.Field) {
 	id := ctx.Value(loggerRequestIDKey).(string)
 	if id != "" {
-		fields = append(fields, zap.String(loggerRequestIDKey, id))
+		fields = append(fields, zap.String(string(loggerRequestIDKey), id))
 	}
-	l.z.Error(msg, fields...) 
+	l.z.Error(msg, fields...)
 }
 
 func (l *L) Debug(ctx context.Context, msg string, fields ...zap.Field) {
 	id := ctx.Value(loggerRequestIDKey).(string)
 	if id != "" {
-		fields = append(fields, zap.String(loggerRequestIDKey, id))
+		fields = append(fields, zap.String(string(loggerRequestIDKey), id))
 	}
 	l.z.Debug(msg, fields...)
 }

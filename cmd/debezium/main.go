@@ -23,13 +23,13 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func main() {
-	var (
+var (
 		configDir = "./config"
-		envPath = filepath.Join(configDir, ".env")
-		yamlPath = filepath.Join(configDir, "config.yaml")
+		envPath   = filepath.Join(configDir, ".env")
+		yamlPath  = filepath.Join(configDir, "config.yaml")
 	)
 
+func main() {
 	cfg, err := config.LoadConfig(envPath, yamlPath)
 	if err != nil {
 		log.Print("failed to load config:", err)
@@ -37,19 +37,23 @@ func main() {
 
 	logger, err := lg.NewLogger(cfg.Env.LogLevel)
 	if err != nil {
-    	log.Fatalf("failed to create logger: %v", err)
+		log.Fatalf("failed to create logger: %v", err)
 	}
 	defer logger.Sync()
-	
-	
+
 	ctx := lg.WithRequestID(context.Background(), "")
 	ctx = lg.WithLogger(ctx, logger)
-	
+
 	logger.Info(ctx, "starting gRPC server", zap.String("version", "test"), zap.Any("config", cfg.GRPC))
 
 	orderPostgres, err := db.NewPostgres(cfg.PostgreSQL)
 	if err != nil {
-		logger.Error(ctx, "main.NewPostgres: failed to create db", zap.String("addr", fmt.Sprintf("%s:%d", cfg.PostgreSQL.Host, cfg.GRPC.Port)), zap.Error(err))
+		logger.Error(
+			ctx,
+			"main.NewPostgres: failed to create db",
+			zap.String("addr", fmt.Sprintf("%s:%d", cfg.PostgreSQL.Host, cfg.GRPC.Port)),
+			zap.Error(err),
+		)
 		os.Exit(1)
 	}
 	logger.Debug(ctx, "successful connection to the database", zap.Any("config", cfg.PostgreSQL))
@@ -58,7 +62,12 @@ func main() {
 
 	orderRedis, err := storage.NewRedisClient(ctx, cfg.Redis)
 	if err != nil {
-		logger.Error(ctx, "main.NewRedisClient: failed to create redis client", zap.String("addr", fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)), zap.Error(err))
+		logger.Error(
+			ctx,
+			"main.NewRedisClient: failed to create redis client",
+			zap.String("addr", fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)),
+			zap.Error(err),
+		)
 		os.Exit(1)
 	}
 	logger.Debug(ctx, "successful connection to the redis", zap.Any("config", cfg.Redis))
@@ -75,8 +84,9 @@ func main() {
 	reflection.Register(grpcServer)
 
 	grpcAddr := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
-	
-	l, err := net.Listen("tcp", grpcAddr)
+
+	lc := &net.ListenConfig{}
+	l, err := lc.Listen(context.Background(), "tcp", grpcAddr)
 	if err != nil {
 		logger.Error(ctx, "main.StartGrpc: failed to listen", zap.String("addr", grpcAddr), zap.Error(err))
 		return

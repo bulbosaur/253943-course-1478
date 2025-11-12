@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ErrorOrderID = errors.New("invalid order id format")
+	ErrorOrderID       = errors.New("invalid order id format")
 	ErrorOrderNotFound = errors.New("order not found")
 )
 
@@ -39,21 +39,21 @@ func (s *PostgresOrderRepository) CreateOrder(ctx context.Context, item string, 
 	err := s.pool.QueryRow(ctx, sql, item, quantity).Scan(&newID)
 	if err != nil {
 		return "", err
-	} 
+	}
 
-	return strconv.Itoa(int(newID)), err 
+	return strconv.Itoa(int(newID)), err
 }
 
 func (s *PostgresOrderRepository) GetOrder(ctx context.Context, strID string) (*pb.Order, error) {
 	var (
 		order pb.Order
-		id int32
+		id    int32
 	)
-	
+
 	intID, err := strconv.ParseInt(strID, 10, 32)
-    if err != nil {
-         return nil, ErrorOrderID
-    }
+	if err != nil {
+		return nil, ErrorOrderID
+	}
 
 	sql := `SELECT id, item, quantity FROM orders WHERE id = $1`
 
@@ -63,14 +63,14 @@ func (s *PostgresOrderRepository) GetOrder(ctx context.Context, strID string) (*
 	}
 
 	order.Id = strconv.Itoa(int(id))
-    return &order, nil
+	return &order, nil
 }
 
 func (s *PostgresOrderRepository) DeleteOrder(ctx context.Context, strID string) (bool, error) {
 	intID, err := strconv.ParseInt(strID, 10, 32)
-    if err != nil {
-         return false, ErrorOrderID
-    }
+	if err != nil {
+		return false, ErrorOrderID
+	}
 
 	sql := `DELETE FROM orders WHERE id = $1`
 
@@ -87,17 +87,20 @@ func (s *PostgresOrderRepository) DeleteOrder(ctx context.Context, strID string)
 	return true, nil
 }
 
-func (s *PostgresOrderRepository) UpdateOrder(ctx context.Context, strID, item string, quantity int32) (*pb.Order, error) {
-		var (
+func (s *PostgresOrderRepository) UpdateOrder(
+	ctx context.Context,
+	strID, item string,
+	quantity int32,
+) (*pb.Order, error) {
+	var (
 		order pb.Order
 	)
-
 
 	intID, err := strconv.ParseInt(strID, 10, 32)
 	if err != nil {
 		return nil, ErrorOrderID
 	}
-	
+
 	sql := `UPDATE orders SET item = $1, quantity = $2 WHERE id = $3`
 
 	res, err := s.pool.Exec(ctx, sql, item, quantity, intID)
@@ -112,6 +115,9 @@ func (s *PostgresOrderRepository) UpdateOrder(ctx context.Context, strID, item s
 
 	sql = `SELECT item, quantity FROM orders WHERE id = $1`
 	err = s.pool.QueryRow(ctx, sql, intID).Scan(&order.Item, &order.Quantity)
+	if err != nil {
+		return nil, err
+	}
 
 	order.Id = strconv.Itoa(int(intID))
 
@@ -120,7 +126,7 @@ func (s *PostgresOrderRepository) UpdateOrder(ctx context.Context, strID, item s
 
 func (s *PostgresOrderRepository) ListOrders(ctx context.Context) ([]*pb.Order, error) {
 	var (
-		id int32
+		id     int32
 		orders []*pb.Order
 	)
 

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"lyceum/config"
+	"net"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -25,8 +25,8 @@ func main() {
 
 	var (
 		configDir = "./config"
-		envPath = filepath.Join(configDir, ".env")
-		yamlPath = filepath.Join(configDir, "config.yaml")
+		envPath   = filepath.Join(configDir, ".env")
+		yamlPath  = filepath.Join(configDir, "config.yaml")
 	)
 
 	cfg, err := config.LoadConfig(envPath, yamlPath)
@@ -35,17 +35,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	portInt, err := strconv.Atoi(cfg.PostgreSQL.Port)
-	if err != nil {
-		fmt.Printf("failed to convert port to int: %v\n", err)
-		os.Exit(1)
-	}
+	hostPort := net.JoinHostPort(cfg.PostgreSQL.Host, cfg.PostgreSQL.Port)
 
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
 		cfg.PostgreSQL.Username,
 		cfg.PostgreSQL.Password,
-		cfg.PostgreSQL.Host,
-		portInt,
+		hostPort,
 		cfg.PostgreSQL.DBName,
 	)
 

@@ -16,6 +16,6 @@ type OrderServiceServer struct {
 func NewOrderServiceServer(repo repository.OrderRepository, cache storage.OrderCache) *OrderServiceServer {
 	return &OrderServiceServer{
 		repository: repo,
-		cache: cache,
+		cache:      cache,
 	}
 }

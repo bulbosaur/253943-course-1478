@@ -19,13 +19,12 @@ import (
 
 type Server struct {
 	srv *http.Server
-	db *pgxpool.Pool
+	db  *pgxpool.Pool
 }
 
 func NewServer(port int, db *pgxpool.Pool) *Server {
 	readHeaderTimeout := viper.GetDuration("HTTP_TIMEOUT") // Проверить, корректно ли
-	println(readHeaderTimeout)
-	
+
 	srv := http.Server{
 		Addr:              ":" + strconv.Itoa(port),
 		Handler:           nil,
@@ -34,7 +33,7 @@ func NewServer(port int, db *pgxpool.Pool) *Server {
 
 	return &Server{
 		srv: &srv,
-		db: db,
+		db:  db,
 	}
 }
 
@@ -65,8 +64,14 @@ func RunRest(ctx context.Context, addr string, timeout time.Duration) {
 	}
 
 	l := logger.FromContext(ctx)
-	l.Info(ctx, "starting HTTP server", zap.String("version", "test"), zap.Any("addr", addr), zap.Any("timeout", timeout))
-	
+	l.Info(
+		ctx,
+		"starting HTTP server",
+		zap.String("version", "test"),
+		zap.Any("addr", addr),
+		zap.Any("timeout", timeout),
+	)
+
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		l.Error(ctx, "http.RunRest: HTTP server failed", zap.Error(err))
 		panic(err)
