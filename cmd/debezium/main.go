@@ -21,17 +21,16 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var (
-	ConfigDir = "./config"
-	EnvPath   = filepath.Join(ConfigDir, ".env")
-	YamlPath  = filepath.Join(ConfigDir, "config.yaml")
-)
-
 func main() {
-	cfg := config.LoadConfig(EnvPath, YamlPath)
+	var (
+		configDir = "./config"
+		envPath   = filepath.Join(configDir, ".env")
+		yamlPath  = filepath.Join(configDir, "config.yaml")
+	)
+	cfg := config.LoadConfig(envPath, yamlPath)
 
 	logger := lg.NewLogger(cfg.Env.LogLevel)
-	defer logger.Sync()
+	defer logger.Sync() //nolint:errcheck // error checking is redundant here
 
 	ctx := lg.WithRequestID(context.Background(), "")
 	ctx = lg.WithLogger(ctx, logger)

@@ -31,7 +31,8 @@ func (r *RedisOrderCache) GetOrder(ctx context.Context, id string) (*pb.Order, e
 	}
 
 	var order pb.Order
-	if err := json.Unmarshal(val, &order); err != nil {
+	err = json.Unmarshal(val, &order)
+	if err != nil {
 		return nil, err
 	}
 	return &order, nil

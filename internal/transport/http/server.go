@@ -2,6 +2,7 @@ package srv
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/http"
 	"strconv"
@@ -76,7 +77,8 @@ func RunRest(ctx context.Context, cfg config.HTTPConfig) {
 		zap.Any("timeout", timeout),
 	)
 
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	err = srv.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		l.Error(ctx, "http.RunRest: HTTP server failed", zap.Error(err))
 		panic(err)
 	}

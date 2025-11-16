@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ErrorOrderID       = errors.New("invalid order id format")
-	ErrorOrderNotFound = errors.New("order not found")
+	ErrOrderID       = errors.New("invalid order id format")
+	ErrOrderNotFound = errors.New("order not found")
 )
 
 func (s *PostgresOrderRepository) CreateOrder(ctx context.Context, item string, quantity int32) (string, error) {
@@ -34,7 +34,7 @@ func (s *PostgresOrderRepository) GetOrder(ctx context.Context, strID string) (*
 
 	intID, err := strconv.ParseInt(strID, 10, 32)
 	if err != nil {
-		return nil, ErrorOrderID
+		return nil, ErrOrderID
 	}
 
 	sql := `SELECT id, item, quantity FROM orders WHERE id = $1`
@@ -51,7 +51,7 @@ func (s *PostgresOrderRepository) GetOrder(ctx context.Context, strID string) (*
 func (s *PostgresOrderRepository) DeleteOrder(ctx context.Context, strID string) (bool, error) {
 	intID, err := strconv.ParseInt(strID, 10, 32)
 	if err != nil {
-		return false, ErrorOrderID
+		return false, ErrOrderID
 	}
 
 	sql := `DELETE FROM orders WHERE id = $1`
@@ -63,7 +63,7 @@ func (s *PostgresOrderRepository) DeleteOrder(ctx context.Context, strID string)
 
 	rowsAffected := res.RowsAffected()
 	if rowsAffected == 0 {
-		return false, ErrorOrderNotFound
+		return false, ErrOrderNotFound
 	}
 
 	return true, nil
@@ -80,7 +80,7 @@ func (s *PostgresOrderRepository) UpdateOrder(
 
 	intID, err := strconv.ParseInt(strID, 10, 32)
 	if err != nil {
-		return nil, ErrorOrderID
+		return nil, ErrOrderID
 	}
 
 	sql := `UPDATE orders SET item = $1, quantity = $2 WHERE id = $3`
@@ -92,7 +92,7 @@ func (s *PostgresOrderRepository) UpdateOrder(
 
 	rowsAffected := res.RowsAffected()
 	if rowsAffected == 0 {
-		return nil, ErrorOrderNotFound
+		return nil, ErrOrderNotFound
 	}
 
 	sql = `SELECT item, quantity FROM orders WHERE id = $1`

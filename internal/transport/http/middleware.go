@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func LoggingMiddleware(ctx context.Context) func(next http.Handler) http.Handler {
+func LoggingMiddleware(_ context.Context) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			reqIDHeader := r.Header.Get("x-request-id")

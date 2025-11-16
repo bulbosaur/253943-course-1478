@@ -126,7 +126,7 @@ func (s *OrderServiceServer) DeleteOrder(
 
 func (s *OrderServiceServer) ListOrders(
 	ctx context.Context,
-	req *pb.ListOrdersRequest,
+	_ *pb.ListOrdersRequest,
 ) (*pb.ListOrdersResponse, error) {
 	var (
 		resp pb.ListOrdersResponse

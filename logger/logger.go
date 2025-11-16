@@ -58,7 +58,7 @@ func NewLogger(loglevel string) Logger {
 }
 
 func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {
-	id := ctx.Value(loggerRequestIDKey).(string)
+	id := ctx.Value(loggerRequestIDKey).(string) //nolint:errcheck // error checking is redundant here
 	if id != "" {
 		fields = append(fields, zap.String(string(loggerRequestIDKey), id))
 	}
@@ -66,7 +66,7 @@ func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {
 }
 
 func (l *L) Error(ctx context.Context, msg string, fields ...zap.Field) {
-	id := ctx.Value(loggerRequestIDKey).(string)
+	id := ctx.Value(loggerRequestIDKey).(string) //nolint:errcheck // error checking is redundant here
 	if id != "" {
 		fields = append(fields, zap.String(string(loggerRequestIDKey), id))
 	}
@@ -74,7 +74,7 @@ func (l *L) Error(ctx context.Context, msg string, fields ...zap.Field) {
 }
 
 func (l *L) Debug(ctx context.Context, msg string, fields ...zap.Field) {
-	id := ctx.Value(loggerRequestIDKey).(string)
+	id := ctx.Value(loggerRequestIDKey).(string) //nolint:errcheck // error checking is redundant here
 	if id != "" {
 		fields = append(fields, zap.String(string(loggerRequestIDKey), id))
 	}

@@ -62,7 +62,10 @@ func loadEnvFile(envPath string) error {
 			value = value[1 : len(value)-1]
 		}
 
-		os.Setenv(key, value)
+		err = os.Setenv(key, value)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -75,7 +78,7 @@ func LoadConfig(envPath, yamlPath string) *Config {
 
 	data, err := os.ReadFile(yamlPath)
 	if err != nil {
-		log.Fatalf("config.LoadConfig: error reading config file: %w", err)
+		log.Fatalf("config.LoadConfig: error reading config file: %v", err)
 	}
 
 	expandedData := os.ExpandEnv(string(data))
@@ -83,20 +86,15 @@ func LoadConfig(envPath, yamlPath string) *Config {
 	viper.SetConfigType("yaml")
 	err = viper.ReadConfig(strings.NewReader(expandedData))
 	if err != nil {
-		log.Fatalf("config.LoadConfig: error parsing config: %w", err)
+		log.Fatalf("config.LoadConfig: error parsing config: %v", err)
 	}
 
 	viper.AutomaticEnv()
 
-	viper.BindEnv("grpc.host", "GRPC_HOST")
-	viper.BindEnv("http.host", "HTTP_HOST")
-	viper.BindEnv("grpc.port", "GRPC_PORT")
-	viper.BindEnv("http.port", "HTTP_PORT")
-
 	var cfg Config
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
-		log.Fatalf("config.LoadConfig: unable to decode config into struct: %w", err)
+		log.Fatalf("config.LoadConfig: unable to decode config into struct: %v", err)
 	}
 
 	return &cfg
