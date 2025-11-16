@@ -8,21 +8,22 @@ import (
 
 func Retry(operation func() error, maxRetries int, baseDelay time.Duration) error {
 	var (
-		err error
-		maxDelay time.Duration = 5 * time.Second
+		err                         error
+		maxDelay                            = 5 * time.Second
+		defaultNumberForBackoffTime float64 = 2
 	)
 
-	for retry := 0; retry < maxRetries; retry++ {
+	for retry := range maxRetries {
 		err = operation()
 		if err == nil {
 			return nil
 		}
 
-		backoffTime := baseDelay * time.Duration(math.Pow(2, float64(retry)))
+		backoffTime := baseDelay * time.Duration(math.Pow(defaultNumberForBackoffTime, float64(retry)))
 		if backoffTime > maxDelay {
 			backoffTime = maxDelay
 		}
-		
+
 		time.Sleep(backoffTime)
 	}
 
