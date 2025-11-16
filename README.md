@@ -4,27 +4,6 @@ gRPC-сервис для управления заказами. Поддержи
 
 ---
 
-## Структура проекта
-
-```
-.
-├── api/                 # .proto-файлы
-├── cmd/                 # Точка входа (main.go)
-├── config/              # Конфигурация (.env, config.yaml)
-├── internal/            # Приватная логика приложения
-│   ├── storage/         # Хранилище заказов (in-memory)
-│   └── transport/
-|       ├── /gRPC        # gRPC-хендлеры, интерсептор и сервер
-│       └── /http        # http сервер
-├── logger/              # Логирование (на базе zap)
-├── pkg/api/test/        # Сгенерированный gRPC-код
-├── .golangci.yml        # Конфигурация линтера
-├── go.mod
-└── Makefile             # Скрипты сборки и разработки
-```
-
----
-
 ## Требования
 
 - **Go** 1.21+
@@ -44,66 +23,51 @@ cd 253943-Sofiytula71-gmail.com-course-1478
 
 ### 2. Настройка окружения
 
-Создайте файл `.env` на основе шаблона:
+Создайте файл `.env` на основе шаблона в разделе [конфигурация](#конфигурация)
+
+Можете переименовать существующий `env.example` по адресу `.\config\env.example` в `.env`.
+
+### 3. Запуск с помощью Docker Compose
 
 ```
-ENV_LOGLEVEL=debug      # Уровень логирования
-
-GRPC_PORT=50051         # Порт запуска gRPC сервера
-GRPC_HOST=localhost     # Хост запуска gRPC сервера
+docker-compose up --build
 ```
 
-### 3. Генерация gRPC-кода
+Это автоматически:
 
-```
-make generate
-```
-
-> Эта команда прочитает `api/order.proto` и сгенерирует Go-файлы в `pkg/api/test/`.
-
-### 4. Сборка и запуск
-
-```
-make run
-```
-
-Сервер запустится на адресе, указанном в конфигурации (по умолчанию `localhost:50051`).
-
----
+- Соберёт образ приложения.
+- Запустит контейнеры приложения, PostgreSQL и Redis.
+- Выполнит миграции базы данных при запуске.
 
 ## Конфигурация
-
-Приложение использует **гибридную конфигурацию**:
-
-- Базовые настройки — из `config/config.yaml`
-- Переменные окружения — из `config/.env` (или системных переменных)
 
 ### Пример `.env`
 
 ```
-ENV_LOGLEVEL=debug
+ENV_LOGLEVEL=info           # Уровень логирования: debug, info
 
-GRPC_PORT=50051
-GRPC_HOST=localhost
+GRPC_PORT=50051             # Порт gRPC-сервера
+GRPC_HOST=localhost         # Хост gRPC-сервера
 
-HTTP_PORT=8080
-HTTP_HOST=localhost
-HTTP_TIMEOUT=30s
+HTTP_PORT=8080              # Порт HTTP-сервера
+HTTP_HOST=localhost         # Хост HTTP-сервера
+HTTP_TIMEOUT=30s            # Таймаут для HTTP-запросов
+
+POSTGRESQL_USER=postgres    # Имя пользователя PostgreSQL
+POSTGRES_PASSWORD=postgres  # Пароль PostgreSQL
+POSTGRES_HOST=localhost     # Адрес PostgreSQL
+POSTGRES_PORT=5432          # Порт PostgreSQL
+POSTGRES_DB=orders          # Имя базы данных
+
+REDIS_HOST=localhost        # Адрес Redis
+REDIS_PORT=6379             # Порт Redis
+REDIS_PASSWORD=redis        # Пароль Redis (пусто — если без аутентификации)
+REDIS_DB=0                  # Номер логической БД в Redis (0–15)
+REDIS_MAX_RETRIES=5         # Макс. число повторных попыток при ошибках
+REDIS_DIAL_TIMEOUT=10s      # Таймаут установки соединения с Redis
+REDIS_TIMEOUT=5s            # Общий таймаут на чтение/запись в Redis
 
 ```
-
-### Описание переменных
-
-| Переменная     | По умолчанию | Описание                                               |
-| -------------- | ------------ | ------------------------------------------------------ |
-| `ENV_LOGLEVEL` | `info`       | Уровень логирования (`debug`, `info`, `warn`, `error`) |
-| `GRPC_HOST`    | `0.0.0.0`    | Хост, на котором слушает gRPC-сервер                   |
-| `GRPC_PORT`    | `50051`      | Порт gRPC-сервера                                      |
-| `GRPC_HOST`    | `0.0.0.0`    | Хост, на котором слушает HTTP-сервер                   |
-| `HTTP_PORT`    | `8080`       | Порт HTTP-сервера                                      |
-| `HTTP_timeout` | `30s`        | таймаут HTTP-сервера                                   |
-
----
 
 ## Доступные команды Make
 
