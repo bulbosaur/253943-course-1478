@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"log"
 
 	"go.uber.org/zap"
 )
@@ -38,7 +39,7 @@ func FromContext(ctx context.Context) Logger {
 	return logger
 }
 
-func NewLogger(loglevel string) (Logger, error) {
+func NewLogger(loglevel string) Logger {
 	loggerCfg := zap.NewProductionConfig()
 	loggerCfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 
@@ -48,12 +49,12 @@ func NewLogger(loglevel string) (Logger, error) {
 
 	logger, err := loggerCfg.Build()
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to create logger: %v", err)
 	}
 
 	lo := L{z: *logger}
 
-	return &lo, nil
+	return &lo
 }
 
 func (l *L) Info(ctx context.Context, msg string, fields ...zap.Field) {

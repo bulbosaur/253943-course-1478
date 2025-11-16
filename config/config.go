@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	redis "lyceum/internal/storage"
 	"lyceum/pkg/db"
@@ -68,15 +67,15 @@ func loadEnvFile(envPath string) error {
 	return nil
 }
 
-func LoadConfig(envPath, yamlPath string) (*Config, error) {
+func LoadConfig(envPath, yamlPath string) *Config {
 	err := loadEnvFile(envPath)
 	if err != nil {
-		log.Printf("config.LoadConfig: can't read .env file %s: %v", envPath, err)
+		log.Fatalf("config.LoadConfig: can't read .env file %s: %v", envPath, err)
 	}
 
 	data, err := os.ReadFile(yamlPath)
 	if err != nil {
-		return nil, fmt.Errorf("config.LoadConfig: error reading config file: %w", err)
+		log.Fatalf("config.LoadConfig: error reading config file: %w", err)
 	}
 
 	expandedData := os.ExpandEnv(string(data))
@@ -84,7 +83,7 @@ func LoadConfig(envPath, yamlPath string) (*Config, error) {
 	viper.SetConfigType("yaml")
 	err = viper.ReadConfig(strings.NewReader(expandedData))
 	if err != nil {
-		return nil, fmt.Errorf("config.LoadConfig: error parsing config: %w", err)
+		log.Fatalf("config.LoadConfig: error parsing config: %w", err)
 	}
 
 	viper.AutomaticEnv()
@@ -97,8 +96,8 @@ func LoadConfig(envPath, yamlPath string) (*Config, error) {
 	var cfg Config
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
-		return nil, fmt.Errorf("config.LoadConfig: unable to decode config into struct: %w", err)
+		log.Fatalf("config.LoadConfig: unable to decode config into struct: %w", err)
 	}
 
-	return &cfg, nil
+	return &cfg
 }

@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const DefaultCacheTimeLife = 10*time.Minute
+const DefaultCacheTimeLife = 10 * time.Minute
 
 func (s *OrderServiceServer) CreateOrder(
 	ctx context.Context,

@@ -6,30 +6,12 @@ import (
 	"strconv"
 
 	pb "lyceum/pkg/api/test"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
 	ErrorOrderID       = errors.New("invalid order id format")
 	ErrorOrderNotFound = errors.New("order not found")
 )
-
-type OrderRepository interface {
-	CreateOrder(ctx context.Context, item string, quantity int32) (string, error)
-	GetOrder(ctx context.Context, id string) (*pb.Order, error)
-	UpdateOrder(ctx context.Context, id, item string, quantity int32) (*pb.Order, error)
-	DeleteOrder(ctx context.Context, id string) (bool, error)
-	ListOrders(ctx context.Context) ([]*pb.Order, error)
-}
-
-type PostgresOrderRepository struct {
-	pool *pgxpool.Pool
-}
-
-func NewPostgresOrderRepository(pool *pgxpool.Pool) *PostgresOrderRepository {
-	return &PostgresOrderRepository{pool: pool}
-}
 
 func (s *PostgresOrderRepository) CreateOrder(ctx context.Context, item string, quantity int32) (string, error) {
 	var newID int32

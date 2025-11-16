@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"lyceum/config"
 	"net"
 	"os"
@@ -29,11 +28,7 @@ func main() {
 		yamlPath  = filepath.Join(configDir, "config.yaml")
 	)
 
-	cfg, err := config.LoadConfig(envPath, yamlPath)
-	if err != nil {
-		log.Print("failed to load config:", err)
-		os.Exit(1)
-	}
+	cfg := config.LoadConfig(envPath, yamlPath)
 
 	hostPort := net.JoinHostPort(cfg.PostgreSQL.Host, cfg.PostgreSQL.Port)
 

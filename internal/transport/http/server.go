@@ -2,10 +2,11 @@ package srv
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"strconv"
-	"time"
 
+	"lyceum/config"
 	"lyceum/logger"
 	pb "lyceum/pkg/api/test"
 
@@ -45,9 +46,12 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.srv.Shutdown(ctx)
 }
 
-func RunRest(ctx context.Context, addr string, timeout time.Duration) {
+func RunRest(ctx context.Context, cfg config.HTTPConfig) {
+	timeout := cfg.Timeout
+	hostPort := net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := pb.RegisterOrderServiceHandlerFromEndpoint(ctx, mux, "localhost:50051", opts)
@@ -56,7 +60,7 @@ func RunRest(ctx context.Context, addr string, timeout time.Duration) {
 	}
 
 	srv := &http.Server{
-		Addr:              addr,
+		Addr:              hostPort,
 		Handler:           mux,
 		ReadTimeout:       timeout,
 		ReadHeaderTimeout: timeout,
@@ -68,7 +72,7 @@ func RunRest(ctx context.Context, addr string, timeout time.Duration) {
 		ctx,
 		"starting HTTP server",
 		zap.String("version", "test"),
-		zap.Any("addr", addr),
+		zap.Any("addr", hostPort),
 		zap.Any("timeout", timeout),
 	)
 

@@ -19,6 +19,17 @@ type Config struct {
 	Timeout     time.Duration `yaml:"timeout"`
 }
 
+func StartRedisClient(ctx context.Context, cfg Config) *RedisOrderCache {
+	orderRedis, err := NewRedisClient(ctx, cfg)
+	if err != nil {
+		log.Fatalf("storage.StartRedisClient: failed to create redis client: %d", err)
+	}
+
+	orderCache := NewRedisOrderCache(orderRedis)
+
+	return orderCache
+}
+
 func NewRedisClient(ctx context.Context, cfg Config) (*redis.Client, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 
