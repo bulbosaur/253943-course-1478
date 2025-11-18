@@ -14,7 +14,7 @@ func (s *DeadLetterQueue) GetMessages() []string {
 	return s.messages
 }
 
-func ProcessWithDLQ(messages []string, handler func(msg string) error, dlq DeadLetterQueue) {
+func ProcessWithDLQ(messages []string, handler func(msg string) error, dlq *DeadLetterQueue) {
 	var err error
 
 	for _, msg := range messages {
