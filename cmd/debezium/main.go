@@ -13,8 +13,10 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	pb "lyceum/pkg/api/test"
+	"lyceum/pkg/faulttolerance"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -23,9 +25,13 @@ import (
 
 func main() {
 	var (
-		configDir = "./config"
-		envPath   = filepath.Join(configDir, ".env")
-		yamlPath  = filepath.Join(configDir, "config.yaml")
+		configDir         = "./config"
+		envPath           = filepath.Join(configDir, ".env")
+		yamlPath          = filepath.Join(configDir, "config.yaml")
+		orderRepo         *repository.PostgresOrderRepository
+		redisClient       *storage.RedisOrderCache
+		defaultMaxRetries = 5
+		defaultBaseDelay  = 100 * time.Millisecond
 	)
 	cfg := config.LoadConfig(envPath, yamlPath)
 
@@ -37,10 +43,24 @@ func main() {
 
 	logger.Info(ctx, "starting gRPC server", zap.String("version", "test"), zap.Any("config", cfg.GRPC))
 
-	orderRepo := repository.StartPostgres(cfg.PostgreSQL)
+	err := faulttolerance.Retry(func() error {
+		orderRepo = repository.StartPostgres(cfg.PostgreSQL)
+		return orderRepo.Pool.Ping(ctx)
+	}, defaultMaxRetries, defaultBaseDelay)
+	if err != nil {
+		logger.Error(ctx, "failed to connect to PostgreSQL", zap.Any("error", err))
+		return
+	}
 	logger.Debug(ctx, "successful connection to the database", zap.Any("config", cfg.PostgreSQL))
 
-	redisClient := storage.StartRedisClient(ctx, cfg.Redis)
+	err = faulttolerance.Retry(func() error {
+		redisClient = storage.StartRedisClient(ctx, cfg.Redis)
+		return redisClient.Client.Ping(ctx).Err()
+	}, defaultMaxRetries, defaultBaseDelay)
+	if err != nil {
+		logger.Error(ctx, "failed to connect to Redis", zap.Any("error", err))
+		return
+	}
 	logger.Debug(ctx, "successful connection to the redis", zap.Any("config", cfg.Redis))
 
 	orderService := v1.NewOrderServiceServer(orderRepo, redisClient)

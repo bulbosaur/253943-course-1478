@@ -18,7 +18,7 @@ func (s *PostgresOrderRepository) CreateOrder(ctx context.Context, item string, 
 
 	sql := `INSERT INTO public.orders (item, quantity) VALUES ($1, $2) RETURNING public.orders.id`
 
-	err := s.pool.QueryRow(ctx, sql, item, quantity).Scan(&newID)
+	err := s.Pool.QueryRow(ctx, sql, item, quantity).Scan(&newID)
 	if err != nil {
 		return "", err
 	}
@@ -39,7 +39,7 @@ func (s *PostgresOrderRepository) GetOrder(ctx context.Context, strID string) (*
 
 	sql := `SELECT id, item, quantity FROM orders WHERE id = $1`
 
-	err = s.pool.QueryRow(ctx, sql, intID).Scan(&id, &order.Item, &order.Quantity)
+	err = s.Pool.QueryRow(ctx, sql, intID).Scan(&id, &order.Item, &order.Quantity)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (s *PostgresOrderRepository) DeleteOrder(ctx context.Context, strID string)
 
 	sql := `DELETE FROM orders WHERE id = $1`
 
-	res, err := s.pool.Exec(ctx, sql, intID)
+	res, err := s.Pool.Exec(ctx, sql, intID)
 	if err != nil {
 		return false, err
 	}
@@ -85,7 +85,7 @@ func (s *PostgresOrderRepository) UpdateOrder(
 
 	sql := `UPDATE orders SET item = $1, quantity = $2 WHERE id = $3`
 
-	res, err := s.pool.Exec(ctx, sql, item, quantity, intID)
+	res, err := s.Pool.Exec(ctx, sql, item, quantity, intID)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (s *PostgresOrderRepository) UpdateOrder(
 	}
 
 	sql = `SELECT item, quantity FROM orders WHERE id = $1`
-	err = s.pool.QueryRow(ctx, sql, intID).Scan(&order.Item, &order.Quantity)
+	err = s.Pool.QueryRow(ctx, sql, intID).Scan(&order.Item, &order.Quantity)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (s *PostgresOrderRepository) ListOrders(ctx context.Context) ([]*pb.Order, 
 
 	sql := `SELECT id, item, quantity FROM orders`
 
-	rows, err := s.pool.Query(ctx, sql)
+	rows, err := s.Pool.Query(ctx, sql)
 	if err != nil {
 		return nil, err
 	}

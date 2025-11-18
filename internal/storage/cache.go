@@ -17,15 +17,15 @@ type OrderCache interface {
 }
 
 type RedisOrderCache struct {
-	client *redis.Client
+	Client *redis.Client
 }
 
 func NewRedisOrderCache(client *redis.Client) *RedisOrderCache {
-	return &RedisOrderCache{client: client}
+	return &RedisOrderCache{Client: client}
 }
 
-func (r *RedisOrderCache) GetOrder(ctx context.Context, id string) (*pb.Order, error) {
-	val, err := r.client.Get(ctx, "order:"+id).Bytes()
+func (s *RedisOrderCache) GetOrder(ctx context.Context, id string) (*pb.Order, error) {
+	val, err := s.Client.Get(ctx, "order:"+id).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -38,14 +38,14 @@ func (r *RedisOrderCache) GetOrder(ctx context.Context, id string) (*pb.Order, e
 	return &order, nil
 }
 
-func (r *RedisOrderCache) SetOrder(ctx context.Context, id string, order *pb.Order, ttl time.Duration) error {
+func (s *RedisOrderCache) SetOrder(ctx context.Context, id string, order *pb.Order, ttl time.Duration) error {
 	data, err := json.Marshal(order)
 	if err != nil {
 		return err
 	}
-	return r.client.Set(ctx, "order:"+id, data, ttl).Err()
+	return s.Client.Set(ctx, "order:"+id, data, ttl).Err()
 }
 
-func (r *RedisOrderCache) DeleteOrder(ctx context.Context, id string) error {
-	return r.client.Del(ctx, "order:"+id).Err()
+func (s *RedisOrderCache) DeleteOrder(ctx context.Context, id string) error {
+	return s.Client.Del(ctx, "order:"+id).Err()
 }

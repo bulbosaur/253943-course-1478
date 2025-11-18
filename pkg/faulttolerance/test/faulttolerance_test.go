@@ -1,7 +1,8 @@
-package faulttolerance
+package faulttolerance_test
 
 import (
 	"errors"
+	"lyceum/pkg/faulttolerance"
 	"testing"
 	"time"
 )
@@ -61,14 +62,14 @@ func TestRetry(t *testing.T) {
 					}
 					return nil
 				}
-				err := Retry(operation, tt.maxRetries, tt.baseDelay)
+				err := faulttolerance.Retry(operation, tt.maxRetries, tt.baseDelay)
 				if (err != nil) != (tt.expected != nil) {
 					t.Errorf("Retry() error = %v, expected = %v", err, tt.expected)
 				}
 				return
 			}
 
-			err := Retry(tt.operation, tt.maxRetries, tt.baseDelay)
+			err := faulttolerance.Retry(tt.operation, tt.maxRetries, tt.baseDelay)
 			if (err != nil) != (tt.expected != nil) {
 				t.Errorf("Retry() error = %v, expected = %v", err, tt.expected)
 			}
@@ -112,7 +113,7 @@ func TestTimeout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := Timeout(tt.operation, tt.timeout)
+			err := faulttolerance.Timeout(tt.operation, tt.timeout)
 			if (err != nil) != (tt.expected != nil) {
 				t.Errorf("Timeout() error = %v, expected = %v", err, tt.expected)
 			}
@@ -142,7 +143,7 @@ func TestDeadLetterQueue(t *testing.T) {
 		{
 			name:     "no failures",
 			messages: []string{"msg1", "msg2", "msg3"},
-			handler: func(msg string) error {
+			handler: func(_ string) error {
 				return nil
 			},
 			expected: []string{},
@@ -161,7 +162,7 @@ func TestDeadLetterQueue(t *testing.T) {
 		{
 			name:     "all failures",
 			messages: []string{"msg1", "msg2", "msg3"},
-			handler: func(msg string) error {
+			handler: func(_ string) error {
 				return errors.New("processing failed")
 			},
 			expected: []string{"msg1", "msg2", "msg3"},
@@ -170,8 +171,8 @@ func TestDeadLetterQueue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dlq := NewDeadLetterQueue()
-			ProcessWithDLQ(tt.messages, tt.handler, dlq)
+			dlq := faulttolerance.NewDeadLetterQueue()
+			faulttolerance.ProcessWithDLQ(tt.messages, tt.handler, dlq)
 			result := dlq.GetMessages()
 			if !stringsEqual(result, tt.expected) {
 				t.Errorf("ProcessWithDLQ() got = %v, want %v", result, tt.expected)

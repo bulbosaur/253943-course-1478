@@ -18,11 +18,11 @@ type OrderRepository interface {
 }
 
 type PostgresOrderRepository struct {
-	pool *pgxpool.Pool
+	Pool *pgxpool.Pool
 }
 
 func NewPostgresOrderRepository(pool *pgxpool.Pool) *PostgresOrderRepository {
-	return &PostgresOrderRepository{pool: pool}
+	return &PostgresOrderRepository{Pool: pool}
 }
 
 func StartPostgres(cfg db.Config) *PostgresOrderRepository {
